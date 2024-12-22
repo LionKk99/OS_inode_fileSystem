@@ -1,4 +1,4 @@
-#include "fileSystem.h"
+#include "filesystem.h"
 
 fileSystem::fileSystem() {
 
@@ -648,7 +648,7 @@ bool fileSystem::writeAppendFile(const char* path, const char* user, const std::
     // 读取之前的内容
     std::string existingContent = readFile(path, user);
     if (existingContent.empty() && !context.empty()) {
-        std::cerr << "Failed to read existing data or file is empty, creating new file with provided content." << std::endl;
+        std::cout << "File is empty, creating new file with provided content." << std::endl;
     }
 
     // 聚合成新内容
@@ -1153,7 +1153,7 @@ void fileSystem::updateBackupFileList() {
         backupFileName[i].clear();  // 清空未使用的字符串
     }
 }
-
+/*
 void fileSystem::listBackUp() {
     // 读取备份文件夹中的所有文件
     std::filesystem::path backupDir("backup");
@@ -1187,7 +1187,42 @@ void fileSystem::listBackUp() {
         ++count;
     }
 }
+*/
+std::string fileSystem::listBackUp() {
+    // 读取备份文件夹中的所有文件
+    std::filesystem::path backupDir("backup");
+    std::vector<std::string> backupFiles;
 
+    // 检查备份文件夹是否存在
+    if (!std::filesystem::exists(backupDir)) {
+        return "Backup directory does not exist!";
+    }
+
+    // 遍历备份文件夹，收集文件路径
+    for (const auto& entry : std::filesystem::directory_iterator(backupDir)) {
+        if (entry.is_regular_file()) {
+            backupFiles.push_back(entry.path().string());
+        }
+    }
+
+    // 按照文件创建时间排序（从最旧到最新）
+    std::sort(backupFiles.begin(), backupFiles.end(),
+        [](const std::string& a, const std::string& b) {
+            return std::filesystem::last_write_time(a) < std::filesystem::last_write_time(b);
+        });
+
+    // 拼接备份文件名到字符串
+    std::stringstream result;
+    result << "Backup files:" << std::endl;
+    size_t count = 0;
+    for (const auto& file : backupFiles) {
+        if (count >= MAX_BACKUPFILE_SIZE) break;  // 超过最大备份文件数量
+        result << file << std::endl;
+        ++count;
+    }
+
+    return result.str();
+}
 
 bool fileSystem::loadBackUp(const std::string& filePath){
     std::ifstream backupFile(filePath, std::ios::binary);
@@ -1222,9 +1257,6 @@ void fileSystem::unlockMutex() {
     is_locked_ = false;  // 标记锁为已解锁
 }
 
-bool fileSystem::isLocked() {
-    return is_locked_;  // 返回当前锁的状态
-}
 
 bool fileSystem::createUser(int usertype, std::string username, std::string password) {
     // 检查用户名和密码合法性，不能包含 ',' 和 '\\'
@@ -1311,7 +1343,7 @@ bool fileSystem::userLogin(int usertype, std::string username, std::string passw
     // 读取文件内容
     std::string fileContent = readFile(fileName.c_str(), "admin");
     if (fileContent.empty()) {
-        std::cerr << "Failed to read the user file: " << fileName << std::endl;
+        std::cout << "user file is empty: " << fileName << std::endl;
         return false;
     }
 
@@ -1372,7 +1404,7 @@ bool fileSystem::changePassword(int usertype, const std::string& username, const
     // 读取文件内容
     std::string fileContent = readFile(fileName.c_str(), "admin");
     if (fileContent.empty()) {
-        std::cerr << "Failed to read the user file: " << fileName << std::endl;
+        std::cout << "user file is empty: " << fileName << std::endl;
         return false;
     }
 
@@ -1558,7 +1590,7 @@ bool fileSystem::deleteUser(const std::string& operatorName, int deletingUserTyp
     // 5. 读取文件内容
     std::string fileContent = readFile(fileName.c_str(), "admin");
     if (fileContent.empty()) {
-        std::cerr << "Failed to read the user file: " << fileName << std::endl;
+        std::cout << "user file is empty: " << fileName << std::endl;
         return false;
     }
 
@@ -1614,7 +1646,7 @@ bool fileSystem::isUser(const std::string& username) {
     return isAdmin(username) || isDoctor(username) || isPatient(username);
 }
 
-bool fileSystem::changeFileOwner(const std::string& filePath, const std::string& oldOwner, const std::string& newOwner) {
+bool fileSystem::changeFileOwner(const std::string& filePath, const std::string& oper, const std::string& newOwner) {
     // 1. 查找文件对应的 inode
     Inode* fileInode = findInodeByPath(filePath.c_str());
     if (!fileInode) {
@@ -1622,9 +1654,11 @@ bool fileSystem::changeFileOwner(const std::string& filePath, const std::string&
         return false;  // 文件不存在
     }
 
+    std::string oldOwner = fileInode->creator;
+
     // 2. 验证原拥有者是否与 inode 的 creator 匹配
-    if (fileInode->creator != oldOwner) {
-        std::cerr << "Error: Original owner mismatch!" << std::endl;
+    if ((oper != oldOwner) && !isAdmin(oper)) {
+        std::cerr << "Error: Original owner mismatch and oper is not a admin!" << std::endl;
         return false;  // 原拥有者不匹配
     }
 
@@ -1640,6 +1674,7 @@ bool fileSystem::changeFileOwner(const std::string& filePath, const std::string&
     std::cout << filePath << "Owner changed successfully :" << "from" << oldOwner << "to" << newOwner << std::endl;
     return true;
 }
+
 // 调整文件的用户组，增加或删除用户
 bool fileSystem::adjustUserGroup(const std::string& filePath, const std::string& operatorName, const std::string& targetUsername, bool addUser) {
     // 1. 查找文件的 inode
@@ -1674,7 +1709,7 @@ bool fileSystem::adjustUserGroup(const std::string& filePath, const std::string&
         }
 
         if (!userAdded) {
-            std::cerr << "Error: User group is full!" << std::endl;
+            std::cout << "Error: User group is full!" << std::endl;
             return false;  // 用户组已满
         }
 
@@ -1695,7 +1730,7 @@ bool fileSystem::adjustUserGroup(const std::string& filePath, const std::string&
         }
 
         if (!userFound) {
-            std::cerr << "Error: User not found in the group!" << std::endl;
+            std::cout << "Error: User not found in the group!" << std::endl;
             return false;  // 未找到该用户
         }
     }    
@@ -1742,7 +1777,7 @@ std::string fileSystem::readRecords(const char* recordsName) {
     return readFile(path.c_str(), "admin");
 }
 
-bool fileSystem::releaseAppointments(const char* Dname, int year, int month, int day) {
+bool fileSystem::releaseAppointments(const char* Dname, std::string year, std::string month, std::string day) {
     
     if (!isDoctor(Dname)) {
         return 0;
@@ -1759,7 +1794,7 @@ bool fileSystem::releaseAppointments(const char* Dname, int year, int month, int
     return createFile(fullPath.c_str(), Dname); // 
 
 }
-bool fileSystem::revocationAppointments(const char* Dname, int year, int month, int day) {
+bool fileSystem::revocationAppointments(const char* Dname, std::string year, std::string month, std::string day) {
     
     if (!isDoctor(Dname)) {
         return 0;
@@ -1777,7 +1812,7 @@ bool fileSystem::revocationAppointments(const char* Dname, int year, int month, 
 }
 
 
-bool fileSystem::writeAppointments(const char* Pname, const char* Dname, int year, int month, int day) {
+bool fileSystem::writeAppointments(const char* Pname, const char* Dname, std::string year, std::string month, std::string day) {
     /*
     预约写入逻辑：
     先读文件，如果人数（行数，因为每人一行）超过8人，那么不予以写入；
@@ -1834,7 +1869,7 @@ bool fileSystem::writeAppointments(const char* Pname, const char* Dname, int yea
 
 
 
-bool fileSystem::deleteAppointments(const char* Pname, const char* Dname, int year, int month, int day) {
+bool fileSystem::deleteAppointments(const char* Pname, const char* Dname, std::string year, std::string month, std::string day) {
     
     /*
         读取相应文件，如未成功，返回0，此预约文件不存在；
@@ -1887,7 +1922,7 @@ std::string fileSystem::listAppointments() {
     return displayDirectory(path.c_str());
 }
 
-std::string fileSystem::readAppointments(const char* Dname, int year, int month, int day) {
+std::string fileSystem::readAppointments(const char* Dname, std::string year, std::string month, std::string day) {
     
     std::ostringstream path;
     path << "/appointments/" << Dname << "-"

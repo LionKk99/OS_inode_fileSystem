@@ -10,6 +10,7 @@
 #include <fstream>
 #include <mutex>
 #include <filesystem>
+#include <algorithm>
 #include <chrono>  // 用于生成时间戳
 
 #define ADMIN 0
@@ -107,19 +108,19 @@ public:
     std::string readRecords(const char* recordsName);
 
     //预约人数限制为8人，不得超过
-    bool releaseAppointments(const char* Dname, int year, int month, int day);//医生发布预约
-    bool revocationAppointments(const char* Dname, int year, int month, int day);
-    bool writeAppointments(const char* Pname, const char* Dname, int year, int month, int day);//病人进行预约，先读预约文件，如果人数已经满了则拒绝写入
-    bool deleteAppointments(const char* Pname, const char* Dname, int year, int month, int day);//找到文件对应行，跳过该行重新写入
+    bool releaseAppointments(const char* Dname, std::string year, std::string month, std::string day);//医生发布预约
+    bool revocationAppointments(const char* Dname, std::string year, std::string month, std::string day);
+    bool writeAppointments(const char* Pname, const char* Dname, std::string year, std::string month, std::string day);//病人进行预约，先读预约文件，如果人数已经满了则拒绝写入
+    bool deleteAppointments(const char* Pname, const char* Dname, std::string year, std::string month, std::string day);//找到文件对应行，跳过该行重新写入
     std::string listAppointments();//展示所有记录文件名
-    std::string readAppointments(const char* Dname, int year, int month, int day);
+    std::string readAppointments(const char* Dname, std::string year, std::string month, std::string day);
 
 
     bool saveFileSystem(const std::string& filePath); //持久化文件系统
     bool loadFileSystem(const std::string& filePath);
     bool saveBackUp();
     bool loadBackUp(const std::string& filePath);
-    void listBackUp();
+    std::string listBackUp();
 
     //功能函数
 
@@ -129,7 +130,7 @@ public:
     bool deleteUser(const std::string& operatorName, int deletingUserType, const std::string& usernameToDelete);
 
     bool changeFilePermission(const std::string& username, const std::string& path, char generalPermission, char groupPermission);
-    bool changeFileOwner(const std::string& filePath, const std::string& oldOwner, const std::string& newOwner);
+    bool changeFileOwner(const std::string& filePath, const std::string& oper, const std::string& newOwner);
     bool adjustUserGroup(const std::string& filePath, const std::string& operatorName, const std::string& targetUsername, bool addUser);
 
 
@@ -140,8 +141,7 @@ public:
 
     std::string getCurrentDateTime();//获取时间
 private:
-    //数据成员
-    std::mutex mutex_;  // 用于文件系统操作的互斥锁
+    //数据成员    
     Inode inodeMem[INODE_NUMBER];  // 存储所有的inode
     char inodeBitmap[BLOCK_NUMBER / 8];  // inode的使用位图    
     char blockBitmap[BLOCK_NUMBER / 8];  // block的使用位图
@@ -149,9 +149,10 @@ private:
     std::string backupFileName[MAX_BACKUPFILE_SIZE];  // 备份文件名
     //FileBlock blockMem[BLOCK_NUMBER];  // 存储所有数据块(实际上不需要)
 
-    bool isLocked();  // 查询锁的状态
+    //并发控制
+    std::mutex mutex_;  // 用于文件系统操作的互斥锁
 
-    std::atomic<bool> is_locked_ = 0;  // 用来追踪锁的状态
+   
 
     // helper 辅助函数
     std::vector<std::string> splitPath(const char* path); //分割路径函数
