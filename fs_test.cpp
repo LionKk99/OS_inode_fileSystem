@@ -2,6 +2,8 @@
 #include <string>
 #include <cassert>
 #include  "fileSystem.h"
+
+//#include <windows.h> //用于Sleep
 /*
     初始化文件系统结构:
     ./
@@ -21,8 +23,65 @@ using namespace std;
 int main() {
     
     // 创建文件系统对象
-    fileSystem fs;
+    
+    fileSystem fs;    
+   
+    cout << fs.listFileSnapshot("test.txt") << endl;
+    fs.useFileSnapshots("test.txt", "2024-12-23_15:38:59", "admin");
+    cout << "after use file snapshots:" << endl;
+    cout << fs.readFile("test.txt", "admin") << endl;
 
+    /*
+    fs.createFile("test.txt", "admin");
+    fs.writeFile("test.txt", "admin", "this is the test 1 !",1);
+    cout << fs.readFile("test.txt", "admin") << endl;
+    cout << fs.enableFileSnapshot("test.txt", "admin") << endl;
+    cout << endl;
+    cout << fs.listFileSnapshot("test.txt") << endl;
+    Sleep(1000);//休眠一秒，保证时间不同
+    fs.writeAppendFile("test.txt", "admin", "\nthis is the test 2 !");
+    cout << endl;
+    cout << fs.listFileSnapshot("test.txt") << endl;
+    Sleep(1000);//休眠一秒，保证时间不同
+    fs.writeAppendFile("test.txt", "admin", "\nthis is the test 3 !");
+    cout << endl;
+    cout << fs.listFileSnapshot("test.txt") << endl; */
+    
+
+    /*
+    fs.createFile("test.txt", "admin");
+    fs.writeFile("test.txt", "admin", "this is the test 1 !");
+    cout << "original context:" << endl;
+    cout << fs.readFile("test.txt", "admin") << endl;
+    cout << fs.enableFileSnapshot("test.txt", "admin") << endl;
+    fs.writeFile("test.txt", "admin", "this is the test 2 !");
+    cout << "after change 2 context:" << endl;
+    cout << fs.readFile("test.txt", "admin") << endl;
+    fs.writeFile("test.txt", "admin", "this is the test 3 !");
+    cout << "after change 3 context:" << endl;
+    cout << fs.readFile("test.txt", "admin") << endl;
+    cout << "File Snapshot list:" << endl;
+    cout << fs.listFileSnapshot("test.txt") << endl;
+    
+    
+    fs.useFileSnapshots("test.txt", "2024-12-23_14:18:29", "admin");
+    cout << "after use File Snapshots:" << endl;
+    cout << fs.readFile("test.txt", "admin") << endl;
+  
+    
+    fs.createFile("test.txt", "admin");
+    fs.writeFile("test.txt", "admin", "this is the test 1 !");
+    cout << "original context:" << endl;
+    cout << fs.readFile("test.txt", "admin") << endl;
+    cout << fs.enableFileSnapshot("test.txt", "admin") << endl;
+    fs.writeFile("test.txt", "admin", "this is the test 2 !");
+    cout << "after change context:" << endl;
+    cout << fs.readFile("test.txt", "admin") << endl;
+    cout << "File Snapshot list:" << endl;
+    cout << fs.listFileSnapshot("test.txt") << endl;
+  
+
+   */ 
     //fs.createUser(PATIENT, "P1", "123");
     //fs.createUser(DOCTOR, "D1", "123");
     //fs.createUser(PATIENT, "P2", "123");

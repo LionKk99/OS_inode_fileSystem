@@ -64,19 +64,22 @@ fileSystem::fileSystem() {
             ...
         - appointments
             - doctor_id-time.txt
-
+        - FS
+            - filename
+                - time_1.txt
      */
 
     //后面可加科室的区分
     createDirectory("user", "admin");
     createDirectory("records", "admin");
     createDirectory("appointments", "admin");
+    createDirectory("FS", "admin");
 
     createFile("user/admin.txt", "admin");
     createFile("user/doctor.txt", "admin");
     createFile("user/patient.txt", "admin");
 
-    writeFile("user/admin.txt", "admin", "admin,123456\n");//写入管理用户的账号密码 账号密码之中不允许出现,\
+    writeFile("user/admin.txt", "admin", "admin,123456\n",1);//写入管理用户的账号密码 账号密码之中不允许出现,\
       
     // 输出文件系统初始化成功的消息
     std::cout << "systeam init the first time" << std::endl;
@@ -304,6 +307,8 @@ bool fileSystem::createFile(const char* path, const char* user) {
     return true;
 }
 
+
+
 bool fileSystem::deleteDirectory(const char* path, const char* user) {//删除时，将文件所使用的块的内容清空
     // 1. 确保路径有效
     if (path == nullptr || strlen(path) == 0) {
@@ -431,7 +436,7 @@ bool fileSystem::writeFile(const char* path, const char* user, const std::string
 */
 
 //一个文件最多分配16个fileblock
-bool fileSystem::writeFile(const char* path, const char* user, const std::string& context) {
+bool fileSystem::writeFile(const char* path, const char* user, const std::string& context,bool flag = 1) {
 
     // 1. 确保路径有效
     if (path == nullptr || strlen(path) == 0) {
@@ -563,6 +568,41 @@ bool fileSystem::writeFile(const char* path, const char* user, const std::string
     fileInode->fileSize = std::min(static_cast<unsigned int>(context.size()), 1023 * 16u);  // 更新文件大小，不超过16368字节
     fileInode->blockNum = blockIndex;
 
+
+    //如果开启文件快照功能还应该写入快照文件
+    if ( (fileInode->FS==1) && (flag==1) ) {
+        std::string time = getCurrentDateTime();
+        
+        //找到空的操作空间,写入时间，操作符号
+        int current = -1;
+        for (int i = 0; i < MAX_FS; i++) {
+            if (fileInode->FSoperation[i] == ' ') {
+                current = i;
+                strncpy_s(fileInode->FStime[i], time.c_str(), sizeof(fileInode->FStime[i]) - 1);
+                fileInode->FStime[i][sizeof(fileInode->FStime[i]) - 1] = '\0'; // 确保以 '\0' 结尾
+                fileInode->FSoperation[i] = 'W';
+                break;
+            }
+        }
+        if (current == -1) {
+            std::cout << "this file snapshots number reach limit" << std::endl;
+            return true;
+        }
+        
+
+        //获取文件名
+        std::vector<std::string> pathParts = splitPath(path);
+        std::string targetFileName = pathParts.back();
+        std::string targetPath = "/FS/" + targetFileName;       
+
+        //创建文件
+        std::string targetFilePath = "/FS/" + targetFileName + "/" + time + ".txt";
+        createFile(targetFilePath.c_str(), user);
+
+        //写入全量内容        
+        writeFile(targetFilePath.c_str(), user, context,1);
+    }
+    
     return true;
 }
 /*
@@ -645,17 +685,82 @@ bool fileSystem::writeAppendFile(const char* path, const char* user, const std::
 }
 */
 bool fileSystem::writeAppendFile(const char* path, const char* user, const std::string& context) {
+    
+    // 1. 确保路径有效
+    if (path == nullptr || strlen(path) == 0) {
+        std::cout << "Error: Path is invalid." << std::endl;
+        return false;
+    }
+
+    // 2. 查找文件对应的 inode
+    Inode* fileInode = findInodeByPath(path);
+    if (!fileInode) {
+        std::cout << "Error: File does not exist." << std::endl;
+        return false;
+    }
+
+    // 检查数据大小是否符合限制
+    if (context.size() > 1023 * 16) {
+        std::cout << "Error: Data exceeds the maximum file size limit of 16368 bytes." << std::endl;
+        return false;
+    }
+
+    // 3. 确保目标是一个文件
+    if (fileInode->fileType != 1) {  // 假设文件类型为1
+        std::cout << "Error: Target is not a file." << std::endl;
+        return false;
+    }
+
+    // 4. 检查用户权限
+    if (strcmp(fileInode->creator, user) != 0 && fileInode->permission[1] != W && !isAdmin(user)) {
+        std::cout << "Error: User does not have write permission." << std::endl;
+        return false;
+    }
+
+    //如果开启文件快照功能应该写入快照文件
+    if (fileInode->FS == 1) {
+        std::string time = getCurrentDateTime();
+
+        //找到空的操作空间,写入时间，操作符号
+        int current = -1;
+        for (int i = 0; i < MAX_FS; i++) {
+            if (fileInode->FSoperation[i] == ' ') {
+                current = i;
+                strncpy_s(fileInode->FStime[i], time.c_str(), sizeof(fileInode->FStime[i]) - 1);
+                fileInode->FStime[i][sizeof(fileInode->FStime[i]) - 1] = '\0'; // 确保以 '\0' 结尾
+                fileInode->FSoperation[i] = 'A';
+                break;
+            }
+        }
+        if (current == -1) {
+            std::cout << "this file snapshots number reach limit" << std::endl;
+            return true;
+        }
+
+
+        //获取文件名
+        std::vector<std::string> pathParts = splitPath(path);
+        std::string targetFileName = pathParts.back();
+        std::string targetPath = "/FS/" + targetFileName;
+
+        //创建文件
+        std::string targetFilePath = "/FS/" + targetFileName + "/" + time + ".txt";
+        createFile(targetFilePath.c_str(), user);
+
+        //写入增量内容        
+        writeFile(targetFilePath.c_str(), user, context,1);
+    }
+
     // 读取之前的内容
     std::string existingContent = readFile(path, user);
     if (existingContent.empty() && !context.empty()) {
-        std::cout << "File is empty, creating new file with provided content." << std::endl;
+        std::cout << "File is empty, write with provided content." << std::endl;
     }
 
     // 聚合成新内容
     std::string newContent = existingContent + context;
-
     // 重新写入
-    return writeFile(path, user, newContent);
+    return writeFile(path, user, newContent, 0);
 }
 
 /*
@@ -1248,13 +1353,11 @@ fileSystem::~fileSystem() {
 }
 
 void fileSystem::lockMutex() {
-    mutex_.lock();
-    is_locked_ = true;  // 标记锁为已锁定
+    mutex_.lock();    
 }
 
 void fileSystem::unlockMutex() {
-    mutex_.unlock();
-    is_locked_ = false;  // 标记锁为已解锁
+    mutex_.unlock();   
 }
 
 
@@ -1435,7 +1538,7 @@ bool fileSystem::changePassword(int usertype, const std::string& username, const
     // 如果找到了匹配的用户名，更新文件
     if (userFound) {
         // 使用 writeFile 写回文件
-        return writeFile(fileName.c_str(), "admin", updatedContent.str());
+        return writeFile(fileName.c_str(), "admin", updatedContent.str(),1);
     }
     else {
         std::cout << "User " << username << " not found." << std::endl;
@@ -1632,7 +1735,7 @@ bool fileSystem::deleteUser(const std::string& operatorName, int deletingUserTyp
         }
         else {
             // 否则，写入更新后的内容
-            writeFile(fileName.c_str(), "admin", updatedContent.str());
+            writeFile(fileName.c_str(), "admin", updatedContent.str(),1);
         }
         return true;
     }
@@ -1945,10 +2048,124 @@ std::string fileSystem::getCurrentDateTime() {
     std::stringstream ss;
     ss << (now.tm_year + 1900) << "-"    // 年
         << (now.tm_mon + 1) << "-"         // 月（注意：tm_mon 是从0开始的）
-        << now.tm_mday << " "              // 日
+        << now.tm_mday << "_"              // 日
         << now.tm_hour << ":"              // 时
         << now.tm_min << ":"               // 分
         << now.tm_sec;                     // 秒
 
     return ss.str();  // 返回格式化后的字符串
+}
+
+bool fileSystem::enableFileSnapshot(const std::string& filePath, const std::string& operatorName) {
+    // 1. 查找文件的 inode
+    Inode* fileInode = findInodeByPath(filePath.c_str());
+    if (!fileInode) {
+        std::cout << "Error: File not found!" << std::endl;
+        return false;  // 文件不存在
+    }
+
+    // 2. 验证操作者权限（管理员或文件的拥有者）
+    if (!isAdmin(operatorName) && fileInode->creator != operatorName) {
+        std::cout << "Error: Only administrators or the file owner can enable File Snapshot!" << std::endl;
+        return false;
+    }
+
+    std::string time = getCurrentDateTime();
+
+    if (fileInode->FS == 1) {
+        return 1;
+    }
+    //设置为开启,并作为第一次文件快照（全量存储）
+    fileInode->FS = 1;
+    strncpy_s(fileInode->FStime[0], time.c_str(), sizeof(fileInode->FStime[0]) - 1);
+    fileInode->FStime[0][sizeof(fileInode->FStime[0]) - 1] = '\0'; // 确保以 '\0' 结尾
+    fileInode->FSoperation[0] = 'W';
+
+
+    //在FS下创建一个，该文件名的文件夹
+
+    //获取文件名
+    std::vector<std::string> pathParts = splitPath(filePath.c_str());    
+    std::string targetFileName = pathParts.back();
+    std::string targetPath = "/FS/" + targetFileName;
+
+    //创建文件夹
+    if (!createDirectory(targetPath.c_str(), "admin")) {
+        std::cout << "This file has opened a file snapshot" << std::endl;
+        return false;
+    }
+
+    //创建文件
+    std::string targetFilePath = "/FS/" + targetFileName +"/"+ time+ ".txt";
+    createFile(targetFilePath.c_str(), operatorName.c_str());
+
+    //写入全量内容
+    std::string context = readFile(filePath.c_str(), operatorName.c_str());
+    writeFile(targetFilePath.c_str(), operatorName.c_str(), context);
+    
+    return true;
+}
+
+std::string fileSystem::listFileSnapshot(const std::string& filePath) {
+    //获取快照文件夹
+    std::vector<std::string> pathParts = splitPath(filePath.c_str());
+    std::string targetFileName = pathParts.back();
+    std::string targetPath = "/FS/" + targetFileName;
+
+    return displayDirectory(targetPath.c_str());
+}
+
+bool fileSystem::useFileSnapshots(const std::string& filePath, const std::string& time, const std::string& operatorName) {
+    
+    //将文件快照中的内容拷贝到源文件夹    
+    
+    // 1. 查找文件的 inode
+    Inode* fileInode = findInodeByPath(filePath.c_str());
+    if (!fileInode) {
+        std::cout << "Error: File not found!" << std::endl;
+        return false;  // 文件不存在
+    }
+
+    // 2. 验证操作者权限（管理员或文件的拥有者）
+    if (!isAdmin(operatorName) && fileInode->creator != operatorName) {
+        std::cout << "Error: Only administrators or the file owner can enable File Snapshot!" << std::endl;
+        return false;
+    }
+
+    std::vector<std::string> pathParts = splitPath(filePath.c_str());
+    std::string targetFileName = pathParts.back();
+
+    //增量过程
+    
+    // 找到time对应的是第几次操作
+    
+    int op = 0;
+    for (int i = 0; i < MAX_FS ; i++) {
+        if (strcmp(fileInode->FStime[i], time.c_str()) == 0) {
+            op = i;
+            break;
+        }
+    }
+    // 找到最新一次写操作
+    int newW = 0;
+    for (int j = op; j >= 0; j--) {
+        if (fileInode->FSoperation[j] == 'W') {
+            newW = j;
+            break;
+        }
+    }
+    //从最新一次写操作依次读取后面的全部内容
+
+    std::string context;
+    std::string time_;
+    for (int z = newW; z <= op; z++) {
+        time_ = fileInode->FStime[z];
+        std::string targetFilePath = "/FS/" + targetFileName + "/" + time_ + ".txt";
+        context = context + readFile(targetFilePath.c_str(), operatorName.c_str());
+    }
+
+    // 写入源文件       
+
+    return writeFile(filePath.c_str(), operatorName.c_str(), context);
+    
 }

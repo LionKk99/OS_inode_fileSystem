@@ -31,6 +31,8 @@
 #define FILE_NAME "filesystem.dat" //文件系统默认保存位置
 #define BACKUP_Folder "backup" //备份文件默认存储位置
 
+#define MAX_FS 5 //每个文件最多的文件快照数量
+
 #define N 0 //没有权限
 #define R 1 //读取权限
 #define W 2 //读写权限
@@ -51,6 +53,10 @@ struct Inode {
     int groupNum;                      //用户组内数量
     char group[MAX_GROUP_NUM][MAX_LENGTH_USERNAME]; //用户组（'lihua','zhangsan'）
 
+    //文件快照
+    bool FS = 0; //是否开启    
+    char FSoperation[MAX_FS] = {' ',' ', ' ', ' ', ' ',};// W/A(WA)
+    char FStime[MAX_FS][64];
 };
 
 
@@ -85,6 +91,10 @@ struct DirectoryBlock { //路径block下记载的是该文件夹下所有内容�
             ...
         - appointments
             - doctor_id-time.txt
+        - FS
+            - filename
+                - time_1.txt
+            
 
  */
 class fileSystem{
@@ -95,7 +105,7 @@ public:
     bool deleteDirectory(const char* path, const char* user); //成功1，失败0  
     std::string displayDirectory(const char *path);//显示传入路径下的目录树
     bool createFile(const char* path, const char* user);
-    bool writeFile(const char* path, const char* user, const std::string& context);//写入内容过大，或者文件不存在都会导致失败
+    bool writeFile(const char* path, const char* user, const std::string& context,bool flag);//写入内容过大，或者文件不存在都会导致失败 ; 由于文件快照，引入flag，仅当flag为1时是真正的写入操作，为0时实际上是writeappend
     bool writeAppendFile(const char* path, const char* user, const std::string& context);
     std::string readFile(const char* path, const char* user);
     bool deleteFile(const char* path, const char* user);
@@ -138,6 +148,11 @@ public:
     bool isDoctor(const std::string& username);
     bool isPatient(const std::string& username);
     bool isUser(const std::string& username);
+
+    // 文件快照
+    bool enableFileSnapshot(const std::string& filePath, const std::string& operatorName);
+    std::string listFileSnapshot(const std::string& filePath);
+    bool useFileSnapshots(const std::string& filePath, const std::string& time, const std::string& operatorName);
 
     std::string getCurrentDateTime();//获取时间
 private:
