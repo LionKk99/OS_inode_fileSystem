@@ -757,6 +757,10 @@ void fsMode(int clientSocket) {
         cout << "8. change File Permission" << endl;
         cout << "9. change File Owner" << endl;
         cout << "10. adjust User Group" << endl;
+        cout << "11. write appened File" << endl;
+        cout << "12. enable File Snapshot" << endl;
+        cout << "13. list File Snapshot" << endl;
+        cout << "14. use File Snapshots" << endl;
         cout << "0. back to upper directory" << endl;
         cout << "----------------------------------------" << endl;
 
@@ -767,12 +771,16 @@ void fsMode(int clientSocket) {
         string path_2;//case 2
         string path_3;//case 3
         string path_4;//case 4
-        string path_5,context_5;//case 4
+        string path_5,context_5;//case 5
         string path_6;//case 6
         string path_7;//case 7
         string path_8, generalPermission, groupPermission;//case 8
         string path_9, newOwner;//case 9
         string path_10, targetUsername, addUser;//case 10
+        string path_11, context_11;//case 11
+        string path_12;
+        string path_13;
+        string path_14, time_14;
 
         int choice = -1;
         cin >> choice;
@@ -1048,6 +1056,111 @@ void fsMode(int clientSocket) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
             }
 
+            break;
+
+        case 11:
+            command = "11. write append File";
+            send(clientSocket, command.c_str(), command.length(), 0);
+
+            //接收 "plz enter the path"
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0)
+            {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+            cin >> path_11;
+            send(clientSocket, path_11.c_str(), path_11.length(), 0);
+
+            //接收 plz enter context(type '-1' to finish)
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0)
+            {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+            context_11.clear();
+            line.clear();
+            while (getline(cin, line)) {
+                if (line == "-1") break; // 遇到特殊标志停止输入
+                context_11 += line + "\n";  // 将每行内容加入 context_11
+            }
+            send(clientSocket, context_11.c_str(), context_11.length(), 0);
+
+
+            //接收结果
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0)
+            {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+            break;
+
+        case 12:
+            command = "12. enable File Snapshot";
+            send(clientSocket, command.c_str(), command.length(), 0);
+
+            //接收 "plz enter the path"
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0)
+            {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+            cin >> path_12;
+            send(clientSocket, path_12.c_str(), path_12.length(), 0);
+
+            //接收result
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0) {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+
+            break;
+
+        case 13:
+            command = "13. list File Snapshot";
+            send(clientSocket, command.c_str(), command.length(), 0);
+
+            //接收 "plz enter the path"
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0)
+            {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+            cin >> path_13;
+            send(clientSocket, path_13.c_str(), path_13.length(), 0);
+
+            //接收result
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0) {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+            break;
+        case 14:
+            command = "14. use File Snapshots";
+            send(clientSocket, command.c_str(), command.length(), 0);
+
+            //接收 "plz enter the path"
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0)
+            {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+            cin >> path_14;
+            send(clientSocket, path_14.c_str(), path_14.length(), 0);
+
+            //接收 "plz enter the time"
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0)
+            {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
+            cin >> time_14;
+            send(clientSocket, time_14.c_str(), time_14.length(), 0);
+
+            //接收result
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            if (bytesRead > 0) {
+                std::cout << std::string(buffer, bytesRead) << std::endl;
+            }
             break;
 
         case 0:

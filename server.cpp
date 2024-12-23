@@ -705,7 +705,7 @@ void fsMode(int clientSocket) {
             std::string context(buffer, bytesRead);
 
             //此处后面需要加锁
-            if (fs.writeFile(path.c_str(),username.c_str(),context)) {
+            if (fs.writeFile(path.c_str(),username.c_str(),context,1)) {
                 reply = "successfully write file" + path;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
@@ -852,6 +852,87 @@ void fsMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+        }
+        else if (command == "11. write append File") {
+
+            reply = "plz enter path";
+            send(clientSocket, reply.c_str(), reply.length(), 0);
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            std::string path(buffer, bytesRead);//
+
+            reply = "plz enter context(type '-1' to finish)";
+            send(clientSocket, reply.c_str(), reply.length(), 0);
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            std::string context(buffer, bytesRead);
+
+            //此处后面需要加锁
+            if (fs.writeAppendFile(path.c_str(), username.c_str(), context)) {
+                reply = "successfully write append file" + path;
+                send(clientSocket, reply.c_str(), reply.length(), 0);
+            }
+            else {
+                reply = "fail to write append file" + path;
+                send(clientSocket, reply.c_str(), reply.length(), 0);
+            }
+
+        }
+        else if (command == "12. enable File Snapshot") {
+
+            reply = "plz enter path";
+            send(clientSocket, reply.c_str(), reply.length(), 0);
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            std::string path(buffer, bytesRead);//
+
+
+            //此处后面需要加锁
+            if (fs.enableFileSnapshot(path,username)) {
+                reply = "File Snapshot open: " + path;
+                send(clientSocket, reply.c_str(), reply.length(), 0);
+            }
+            else {
+                reply = "File Snapshot open fail: " + path;
+                send(clientSocket, reply.c_str(), reply.length(), 0);
+            }
+        }
+        else if (command == "13. list File Snapshot") {
+
+            reply = "plz enter path";
+            send(clientSocket, reply.c_str(), reply.length(), 0);
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            std::string path(buffer, bytesRead);//
+
+
+            //此处后面需要加锁
+            if (fs.listFileSnapshot(path).empty()) {
+                reply = "File Snapshot list is empty";
+                send(clientSocket, reply.c_str(), reply.length(), 0);
+            }
+            else {
+                reply = fs.listFileSnapshot(path);
+                send(clientSocket, reply.c_str(), reply.length(), 0);
+            }
+        }
+        else if (command == "14. use File Snapshots") {
+
+            reply = "plz enter path";
+            send(clientSocket, reply.c_str(), reply.length(), 0);
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            std::string path(buffer, bytesRead);//
+
+            reply = "plz enter time";
+            send(clientSocket, reply.c_str(), reply.length(), 0);
+            bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+            std::string time(buffer, bytesRead);//
+
+            //此处后面需要加锁
+            if (fs.useFileSnapshots(path,time,username)) {
+                reply = "File Snapshot imply succussful: " + path;
+                send(clientSocket, reply.c_str(), reply.length(), 0);
+            }
+            else {
+                reply = "File Snapshot imply fail: " + path;
+                send(clientSocket, reply.c_str(), reply.length(), 0);
+            }
         }
             
 
