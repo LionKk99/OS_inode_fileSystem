@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include  "fileSystem.h"
+#include <unistd.h>
+#include  "filesystem.h"
 
 //#include <windows.h> //用于Sleep
 /*
@@ -27,7 +28,7 @@ int main() {
     fileSystem fs;    
    
     cout << fs.listFileSnapshot("test.txt") << endl;
-    fs.useFileSnapshots("test.txt", "2024-12-23_15:38:59", "admin");
+    fs.useFileSnapshots("test.txt", "2024-12-23_15:58:41", "admin");
     cout << "after use file snapshots:" << endl;
     cout << fs.readFile("test.txt", "admin") << endl;
 
@@ -38,15 +39,15 @@ int main() {
     cout << fs.enableFileSnapshot("test.txt", "admin") << endl;
     cout << endl;
     cout << fs.listFileSnapshot("test.txt") << endl;
-    Sleep(1000);//休眠一秒，保证时间不同
+    sleep(1);
     fs.writeAppendFile("test.txt", "admin", "\nthis is the test 2 !");
     cout << endl;
     cout << fs.listFileSnapshot("test.txt") << endl;
-    Sleep(1000);//休眠一秒，保证时间不同
+    sleep(1);//
     fs.writeAppendFile("test.txt", "admin", "\nthis is the test 3 !");
     cout << endl;
-    cout << fs.listFileSnapshot("test.txt") << endl; */
-    
+    cout << fs.listFileSnapshot("test.txt") << endl; 
+    */
 
     /*
     fs.createFile("test.txt", "admin");

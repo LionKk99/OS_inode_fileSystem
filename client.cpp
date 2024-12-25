@@ -18,7 +18,7 @@ void PatientMode(int clientSocket) {
 
     char buffer[BUFFER_SIZE];
 
-    //·¢ËÍ¸ø·şÎñÆ÷ÏëÒª½øÈëpatient²Ù×÷Ò³Ãæ
+    //å‘é€ç»™æœåŠ¡å™¨æƒ³è¦è¿›å…¥patientæ“ä½œé¡µé¢
     std::string message;
     message = "patient";
     send(clientSocket, message.c_str(), message.length(), 0);
@@ -32,27 +32,27 @@ void PatientMode(int clientSocket) {
     int bytesRead;
     bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-    //patientµÇÂ¼Á÷³Ì
+    //patientç™»å½•æµç¨‹
     while (1)
     {
-        //½ÓÊÜ"please enter username"
+        //æ¥å—"please enter username"
         if (bytesRead > 0) {
             std::cout << std::string(buffer, bytesRead) << std::endl;
         }
-        cin >> message;//ÊäÈëusername
-        username = message;//±£´æÓÃ»§Ãû
-        send(clientSocket, message.c_str(), message.length(), 0);//·¢ËÍ¸ø·şÎñÆ÷
+        cin >> message;//è¾“å…¥username
+        username = message;//ä¿å­˜ç”¨æˆ·å
+        send(clientSocket, message.c_str(), message.length(), 0);//å‘é€ç»™æœåŠ¡å™¨
         bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-        //½ÓÊÜ"please enter password"
+        //æ¥å—"please enter password"
         if (bytesRead > 0) {
             std::cout << std::string(buffer, bytesRead) << std::endl;
         }
-        cin >> message;//ÊäÈëÃÜÂë
-        send(clientSocket, message.c_str(), message.length(), 0);//·¢¸ø·şÎñÆ÷
+        cin >> message;//è¾“å…¥å¯†ç 
+        send(clientSocket, message.c_str(), message.length(), 0);//å‘ç»™æœåŠ¡å™¨
         bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-        //½ÓÊÕ¡°µÇÂ¼³É¹¦¡±
+        //æ¥æ”¶â€œç™»å½•æˆåŠŸâ€
         if (std::string(buffer, bytesRead) == "patient log in success")
         {
             std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -86,7 +86,7 @@ void PatientMode(int clientSocket) {
             command = "1. read my records";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -98,7 +98,7 @@ void PatientMode(int clientSocket) {
             command = "2. list all Appointments";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -110,7 +110,7 @@ void PatientMode(int clientSocket) {
             command = "3. make my Appointments";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter doctor Name"
+            //æ¥æ”¶ "plz enter doctor Name"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -119,7 +119,7 @@ void PatientMode(int clientSocket) {
             cin >> d_Name_3;
             send(clientSocket, d_Name_3.c_str(), d_Name_3.length(), 0);
 
-            //½ÓÊÕ "plz enter year"
+            //æ¥æ”¶ "plz enter year"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -128,7 +128,7 @@ void PatientMode(int clientSocket) {
             cin >> year_3;
             send(clientSocket, year_3.c_str(), year_3.length(), 0);
 
-            //½ÓÊÕ "plz enter month"
+            //æ¥æ”¶ "plz enter month"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -137,7 +137,7 @@ void PatientMode(int clientSocket) {
             cin >> month_3;
             send(clientSocket, month_3.c_str(), month_3.length(), 0);
 
-            //½ÓÊÕ "plz enter day"
+            //æ¥æ”¶ "plz enter day"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -146,7 +146,7 @@ void PatientMode(int clientSocket) {
             cin >> day_3;
             send(clientSocket, day_3.c_str(), day_3.length(), 0);
 
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -158,7 +158,7 @@ void PatientMode(int clientSocket) {
             command = "4. delete my Appointments";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter doctor Name"
+            //æ¥æ”¶ "plz enter doctor Name"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -167,7 +167,7 @@ void PatientMode(int clientSocket) {
             cin >> d_Name_4;
             send(clientSocket, d_Name_4.c_str(), d_Name_4.length(), 0);
 
-            //½ÓÊÕ "plz enter year"
+            //æ¥æ”¶ "plz enter year"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -176,7 +176,7 @@ void PatientMode(int clientSocket) {
             cin >> year_4;
             send(clientSocket, year_4.c_str(), year_4.length(), 0);
 
-            //½ÓÊÕ "plz enter month"
+            //æ¥æ”¶ "plz enter month"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -185,7 +185,7 @@ void PatientMode(int clientSocket) {
             cin >> month_4;
             send(clientSocket, month_4.c_str(), month_4.length(), 0);
 
-            //½ÓÊÕ "plz enter day"
+            //æ¥æ”¶ "plz enter day"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -194,7 +194,7 @@ void PatientMode(int clientSocket) {
             cin >> day_4;
             send(clientSocket, day_4.c_str(), day_4.length(), 0);
 
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -221,7 +221,7 @@ void DoctorMode(int clientSocket) {
 
     char buffer[BUFFER_SIZE];
 
-    //·¢ËÍ¸ø·şÎñÆ÷ÏëÒª½øÈëdoctor²Ù×÷Ò³Ãæ
+    //å‘é€ç»™æœåŠ¡å™¨æƒ³è¦è¿›å…¥doctoræ“ä½œé¡µé¢
     std::string message;
     message = "doctor";
     send(clientSocket, message.c_str(), message.length(), 0);
@@ -238,27 +238,27 @@ void DoctorMode(int clientSocket) {
     int bytesRead;
     bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-    //doctorµÇÂ¼Á÷³Ì
+    //doctorç™»å½•æµç¨‹
     while (1)
     {
-        //½ÓÊÜ"please enter username"
+        //æ¥å—"please enter username"
         if (bytesRead > 0) {
             std::cout << std::string(buffer, bytesRead) << std::endl;
         }
-        cin >> message;//ÊäÈëusername
-        username = message;//±£´æÓÃ»§Ãû
-        send(clientSocket, message.c_str(), message.length(), 0);//·¢ËÍ¸ø·şÎñÆ÷
+        cin >> message;//è¾“å…¥username
+        username = message;//ä¿å­˜ç”¨æˆ·å
+        send(clientSocket, message.c_str(), message.length(), 0);//å‘é€ç»™æœåŠ¡å™¨
         bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-        //½ÓÊÜ"please enter password"
+        //æ¥å—"please enter password"
         if (bytesRead > 0) {
             std::cout << std::string(buffer, bytesRead) << std::endl;
         }
-        cin >> message;//ÊäÈëÃÜÂë
-        send(clientSocket, message.c_str(), message.length(), 0);//·¢¸ø·şÎñÆ÷
+        cin >> message;//è¾“å…¥å¯†ç 
+        send(clientSocket, message.c_str(), message.length(), 0);//å‘ç»™æœåŠ¡å™¨
         bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-        //½ÓÊÕ¡°µÇÂ¼³É¹¦¡±
+        //æ¥æ”¶â€œç™»å½•æˆåŠŸâ€
         if (std::string(buffer, bytesRead) == "doctor log in success")
         {
             std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -296,7 +296,7 @@ void DoctorMode(int clientSocket) {
             command = "1. list records";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -309,7 +309,7 @@ void DoctorMode(int clientSocket) {
             send(clientSocket, command.c_str(), command.length(), 0);
 
             
-            //½ÓÊÕ "plz enter patient username"
+            //æ¥æ”¶ "plz enter patient username"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -318,7 +318,7 @@ void DoctorMode(int clientSocket) {
             cin >> Pname_2;
             send(clientSocket, Pname_2.c_str(), Pname_2.length(), 0);
 
-            //½ÓÊÕ plz enter context(type '-1' to finish)
+            //æ¥æ”¶ plz enter context(type '-1' to finish)
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -327,13 +327,13 @@ void DoctorMode(int clientSocket) {
             context_2.clear();
            
             while (getline(cin, line)) {
-                if (line == "-1") break; // Óöµ½ÌØÊâ±êÖ¾Í£Ö¹ÊäÈë
-                context_2 += line + "\n";  // ½«Ã¿ĞĞÄÚÈİ¼ÓÈë context_2
+                if (line == "-1") break; // é‡åˆ°ç‰¹æ®Šæ ‡å¿—åœæ­¢è¾“å…¥
+                context_2 += line + "\n";  // å°†æ¯è¡Œå†…å®¹åŠ å…¥ context_2
             }
             send(clientSocket, context_2.c_str(), context_2.length(), 0);            
 
 
-            //½ÓÊÕ½á¹û
+            //æ¥æ”¶ç»“æœ
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -345,7 +345,7 @@ void DoctorMode(int clientSocket) {
             command = "3. read records";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter records Name"
+            //æ¥æ”¶ "plz enter records Name"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -354,7 +354,7 @@ void DoctorMode(int clientSocket) {
             cin >> recordsName_3;
             send(clientSocket, recordsName_3.c_str(), recordsName_3.length(), 0);
 
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -366,7 +366,7 @@ void DoctorMode(int clientSocket) {
             command = "4. release Appointments";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter year"
+            //æ¥æ”¶ "plz enter year"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -375,7 +375,7 @@ void DoctorMode(int clientSocket) {
             cin >> year_4;
             send(clientSocket, year_4.c_str(), year_4.length(), 0);
 
-            //½ÓÊÕ "plz enter month"
+            //æ¥æ”¶ "plz enter month"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -384,7 +384,7 @@ void DoctorMode(int clientSocket) {
             cin >> month_4;
             send(clientSocket, month_4.c_str(), month_4.length(), 0);
 
-            //½ÓÊÕ "plz enter day"
+            //æ¥æ”¶ "plz enter day"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -393,7 +393,7 @@ void DoctorMode(int clientSocket) {
             cin >> day_4;
             send(clientSocket, day_4.c_str(), day_4.length(), 0);
 
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -405,7 +405,7 @@ void DoctorMode(int clientSocket) {
             command = "5. revocation Appointments";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter year"
+            //æ¥æ”¶ "plz enter year"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -414,7 +414,7 @@ void DoctorMode(int clientSocket) {
             cin >> year_5;
             send(clientSocket, year_5.c_str(), year_5.length(), 0);
 
-            //½ÓÊÕ "plz enter month"
+            //æ¥æ”¶ "plz enter month"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -423,7 +423,7 @@ void DoctorMode(int clientSocket) {
             cin >> month_5;
             send(clientSocket, month_5.c_str(), month_5.length(), 0);
 
-            //½ÓÊÕ "plz enter day"
+            //æ¥æ”¶ "plz enter day"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -432,7 +432,7 @@ void DoctorMode(int clientSocket) {
             cin >> day_5;
             send(clientSocket, day_5.c_str(), day_5.length(), 0);
 
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -444,7 +444,7 @@ void DoctorMode(int clientSocket) {
             command = "6. list Appointments";
             send(clientSocket, command.c_str(), command.length(), 0);
             
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -456,7 +456,7 @@ void DoctorMode(int clientSocket) {
             command = "7. read Appointments";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter year"
+            //æ¥æ”¶ "plz enter year"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -465,7 +465,7 @@ void DoctorMode(int clientSocket) {
             cin >> year_5;
             send(clientSocket, year_5.c_str(), year_5.length(), 0);
 
-            //½ÓÊÕ "plz enter month"
+            //æ¥æ”¶ "plz enter month"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -474,7 +474,7 @@ void DoctorMode(int clientSocket) {
             cin >> month_5;
             send(clientSocket, month_5.c_str(), month_5.length(), 0);
 
-            //½ÓÊÕ "plz enter day"
+            //æ¥æ”¶ "plz enter day"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -483,7 +483,7 @@ void DoctorMode(int clientSocket) {
             cin >> day_5;
             send(clientSocket, day_5.c_str(), day_5.length(), 0);
 
-            //½ÓÊÕstring
+            //æ¥æ”¶string
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -509,7 +509,7 @@ void DoctorMode(int clientSocket) {
 void AdministratorMode(int clientSocket) {
     char buffer[BUFFER_SIZE];
 
-    //·¢ËÍ¸ø·şÎñÆ÷ÏëÒª½øÈëadmin²Ù×÷Ò³Ãæ
+    //å‘é€ç»™æœåŠ¡å™¨æƒ³è¦è¿›å…¥adminæ“ä½œé¡µé¢
     std::string message;
     message = "admin";
     send(clientSocket, message.c_str(), message.length(), 0);
@@ -525,27 +525,27 @@ void AdministratorMode(int clientSocket) {
     int bytesRead;
     bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-    //adminµÇÂ¼Á÷³Ì
+    //adminç™»å½•æµç¨‹
     while (1)
     {
-        //½ÓÊÜ"please enter username"
+        //æ¥å—"please enter username"
         if (bytesRead > 0) {
             std::cout << std::string(buffer, bytesRead) << std::endl;
         }
-        cin >> message;//ÊäÈëusername
-        username = message;//±£´æÓÃ»§Ãû
-        send(clientSocket, message.c_str(), message.length(), 0);//·¢ËÍ¸ø·şÎñÆ÷
+        cin >> message;//è¾“å…¥username
+        username = message;//ä¿å­˜ç”¨æˆ·å
+        send(clientSocket, message.c_str(), message.length(), 0);//å‘é€ç»™æœåŠ¡å™¨
         bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-        //½ÓÊÜ"please enter password"
+        //æ¥å—"please enter password"
         if (bytesRead > 0) {
             std::cout << std::string(buffer, bytesRead) << std::endl;
         }
-        cin >> message;//ÊäÈëÃÜÂë
-        send(clientSocket, message.c_str(), message.length(), 0);//·¢¸ø·şÎñÆ÷
+        cin >> message;//è¾“å…¥å¯†ç 
+        send(clientSocket, message.c_str(), message.length(), 0);//å‘ç»™æœåŠ¡å™¨
         bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
 
-        //½ÓÊÕ¡°µÇÂ¼³É¹¦¡±
+        //æ¥æ”¶â€œç™»å½•æˆåŠŸâ€
         if (std::string(buffer, bytesRead) == "admin log in success")
         {
             std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -561,7 +561,7 @@ void AdministratorMode(int clientSocket) {
         }
     }
 
-    //admin¹¦ÄÜÑ¡Ôñ½çÃæ
+    //adminåŠŸèƒ½é€‰æ‹©ç•Œé¢
     while (1) {
         cout << "-----------AdministratorMode------------" << endl;
         cout << "1. create user" << endl;
@@ -583,7 +583,7 @@ void AdministratorMode(int clientSocket) {
                 command = "1. create user";
                 send(clientSocket, command.c_str(), command.length(), 0);
 
-                //½ÓÊÕ "plz enter new user type : admin -- 0, doctor -- 1, patient -- 2"
+                //æ¥æ”¶ "plz enter new user type : admin -- 0, doctor -- 1, patient -- 2"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -591,7 +591,7 @@ void AdministratorMode(int clientSocket) {
                 }                
                 cin >> userType;
                 send(clientSocket, userType.c_str(), userType.length(), 0);
-                //½ÓÊÕ plz enter username
+                //æ¥æ”¶ plz enter username
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -599,7 +599,7 @@ void AdministratorMode(int clientSocket) {
                 }               
                 cin >> newUserName;
                 send(clientSocket, newUserName.c_str(), newUserName.length(), 0);
-                //½ÓÊÕ plz enter user password
+                //æ¥æ”¶ plz enter user password
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -607,7 +607,7 @@ void AdministratorMode(int clientSocket) {
                 }                
                 cin >> newUserPW;
                 send(clientSocket, newUserPW.c_str(), newUserPW.length(), 0);
-                //½ÓÊÕ"successfully create a new user:"/"fail to create a new user"
+                //æ¥æ”¶"successfully create a new user:"/"fail to create a new user"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0) {
                     std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -617,7 +617,7 @@ void AdministratorMode(int clientSocket) {
                 command = "2. delete user";
                 send(clientSocket, command.c_str(), command.length(), 0);
 
-                //½ÓÊÕ "plz enter delete user type : admin -- 0, doctor -- 1, patient -- 2"
+                //æ¥æ”¶ "plz enter delete user type : admin -- 0, doctor -- 1, patient -- 2"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -625,7 +625,7 @@ void AdministratorMode(int clientSocket) {
                 }
                 cin >> d_userType;
                 send(clientSocket, d_userType.c_str(), d_userType.length(), 0);
-                //½ÓÊÕ plz enter delete username
+                //æ¥æ”¶ plz enter delete username
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -634,7 +634,7 @@ void AdministratorMode(int clientSocket) {
                 cin >> d_UserName;
                 send(clientSocket, d_UserName.c_str(), d_UserName.length(), 0);
                 
-                //½ÓÊÕ"successfully delete a  user:"/"fail to create a delete user"
+                //æ¥æ”¶"successfully delete a  user:"/"fail to create a delete user"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0) {
                     std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -645,7 +645,7 @@ void AdministratorMode(int clientSocket) {
                 command = "3. create backup";
                 send(clientSocket, command.c_str(), command.length(), 0);                               
 
-                //½ÓÊÕ"successfully create a backup:"/"fail to create a backup"
+                //æ¥æ”¶"successfully create a backup:"/"fail to create a backup"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0) {
                     std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -656,7 +656,7 @@ void AdministratorMode(int clientSocket) {
                 command = "4. list backup";
                 send(clientSocket, command.c_str(), command.length(), 0);
 
-                //½ÓÊÕ"string"/"fail to create a backup"
+                //æ¥æ”¶"string"/"fail to create a backup"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0) {
                     std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -667,7 +667,7 @@ void AdministratorMode(int clientSocket) {
                 command = "5. load backup";
                 send(clientSocket, command.c_str(), command.length(), 0);
 
-                //½ÓÊÕ plz enter backup file path
+                //æ¥æ”¶ plz enter backup file path
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -676,7 +676,7 @@ void AdministratorMode(int clientSocket) {
                 cin >> backup_file_path;
                 send(clientSocket, backup_file_path.c_str(), backup_file_path.length(), 0);
 
-                //½ÓÊÕ"successfully load a backup:"/"fail to load a backup"
+                //æ¥æ”¶"successfully load a backup:"/"fail to load a backup"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0) {
                     std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -688,7 +688,7 @@ void AdministratorMode(int clientSocket) {
                 command = "6. change user password";
                 send(clientSocket, command.c_str(), command.length(), 0);
                 
-                //½ÓÊÕ "plz enter user type : admin -- 0, doctor -- 1, patient -- 2"
+                //æ¥æ”¶ "plz enter user type : admin -- 0, doctor -- 1, patient -- 2"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -696,7 +696,7 @@ void AdministratorMode(int clientSocket) {
                 }
                 cin >> userType_7;
                 send(clientSocket, userType_7.c_str(), userType_7.length(), 0);
-                //½ÓÊÕ plz enter username
+                //æ¥æ”¶ plz enter username
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -704,7 +704,7 @@ void AdministratorMode(int clientSocket) {
                 }
                 cin >> UserName_7;
                 send(clientSocket, UserName_7.c_str(), UserName_7.length(), 0);
-                //½ÓÊÕ plz enter user new password
+                //æ¥æ”¶ plz enter user new password
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0)
                 {
@@ -712,7 +712,7 @@ void AdministratorMode(int clientSocket) {
                 }
                 cin >> newPW_7;
                 send(clientSocket, newPW_7.c_str(), newPW_7.length(), 0);
-                //½ÓÊÕ"successfully change user password:"/"fail to change user password"
+                //æ¥æ”¶"successfully change user password:"/"fail to change user password"
                 bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
                 if (bytesRead > 0) {
                     std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -733,18 +733,40 @@ void AdministratorMode(int clientSocket) {
 
 }
 
-
 void fsMode(int clientSocket) {
     char buffer[BUFFER_SIZE];
 
-    //·¢ËÍ¸ø·şÎñÆ÷ÏëÒª½øÈëfs²Ù×÷Ò³Ãæ
+    //å‘é€ç»™æœåŠ¡å™¨æƒ³è¦è¿›å…¥fsæ“ä½œé¡µé¢
     std::string message;
     message = "fs";
     send(clientSocket, message.c_str(), message.length(), 0);
 
     int bytesRead;
+    bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+    string name;
 
-    //fs¹¦ÄÜÑ¡Ôñ½çÃæ
+    //fsModeç™»å½•æµç¨‹
+    
+    //æ¥å—"please enter username"
+    if (bytesRead > 0) {
+        std::cout << std::string(buffer, bytesRead) << std::endl;
+    }
+    cin >> message;//è¾“å…¥username        
+    send(clientSocket, message.c_str(), message.length(), 0);//å‘é€ç»™æœåŠ¡å™¨
+                   
+     
+    //æ¥æ”¶"welcome to file system mode"
+    bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+
+    while (1) {
+        if (bytesRead > 0 && (std::string(buffer, bytesRead)== "welcome to file system mode")) {
+            std::cout << std::string(buffer, bytesRead) << std::endl;
+            break;
+        }
+    }
+    
+
+    //fsåŠŸèƒ½é€‰æ‹©ç•Œé¢
     while (1) {
         cout << "----------------FileSystem--------------" << endl;
         cout << "1. create Directory" << endl;
@@ -790,7 +812,7 @@ void fsMode(int clientSocket) {
             command = "1. create Directory";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -799,7 +821,7 @@ void fsMode(int clientSocket) {
             cin >> path_1;
             send(clientSocket, path_1.c_str(), path_1.length(), 0);
 
-            //½ÓÊÕ"successfully create Directory:"/"fail to create Directory:"
+            //æ¥æ”¶"successfully create Directory:"/"fail to create Directory:"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -811,7 +833,7 @@ void fsMode(int clientSocket) {
             command = "2. delete Directory";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -820,7 +842,7 @@ void fsMode(int clientSocket) {
             cin >> path_2;
             send(clientSocket, path_2.c_str(), path_2.length(), 0);
 
-            //½ÓÊÕ"successfully delete Directory:"/"fail to delete Directory:"
+            //æ¥æ”¶"successfully delete Directory:"/"fail to delete Directory:"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -832,7 +854,7 @@ void fsMode(int clientSocket) {
             command = "3. display Directory";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -841,7 +863,7 @@ void fsMode(int clientSocket) {
             cin >> path_3;
             send(clientSocket, path_3.c_str(), path_3.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -853,7 +875,7 @@ void fsMode(int clientSocket) {
             command = "4. create File";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -862,7 +884,7 @@ void fsMode(int clientSocket) {
             cin >> path_4;
             send(clientSocket, path_4.c_str(), path_4.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -874,7 +896,7 @@ void fsMode(int clientSocket) {
             command = "5. write File";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -883,7 +905,7 @@ void fsMode(int clientSocket) {
             cin >> path_5;
             send(clientSocket, path_5.c_str(), path_5.length(), 0);
 
-            //½ÓÊÕ plz enter context(type '-1' to finish)
+            //æ¥æ”¶ plz enter context(type '-1' to finish)
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -892,13 +914,13 @@ void fsMode(int clientSocket) {
             context_5.clear();
 
             while (getline(cin, line)) {
-                if (line == "-1") break; // Óöµ½ÌØÊâ±êÖ¾Í£Ö¹ÊäÈë
-                context_5 += line + "\n";  // ½«Ã¿ĞĞÄÚÈİ¼ÓÈë context_5
+                if (line == "-1") break; // é‡åˆ°ç‰¹æ®Šæ ‡å¿—åœæ­¢è¾“å…¥
+                context_5 += line + "\n";  // å°†æ¯è¡Œå†…å®¹åŠ å…¥ context_5
             }
             send(clientSocket, context_5.c_str(), context_5.length(), 0);
 
 
-            //½ÓÊÕ½á¹û
+            //æ¥æ”¶ç»“æœ
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -910,7 +932,7 @@ void fsMode(int clientSocket) {
             command = "6. read File";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -919,7 +941,7 @@ void fsMode(int clientSocket) {
             cin >> path_6;
             send(clientSocket, path_6.c_str(), path_6.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -931,7 +953,7 @@ void fsMode(int clientSocket) {
             command = "7. delete File";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -940,7 +962,7 @@ void fsMode(int clientSocket) {
             cin >> path_7;
             send(clientSocket, path_7.c_str(), path_7.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -952,7 +974,7 @@ void fsMode(int clientSocket) {
             command = "8. change File Permission";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -961,7 +983,7 @@ void fsMode(int clientSocket) {
             cin >> path_8;
             send(clientSocket, path_8.c_str(), path_8.length(), 0);
 
-            //½ÓÊÕ "plz enter the generalPermission"
+            //æ¥æ”¶ "plz enter the generalPermission"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -971,7 +993,7 @@ void fsMode(int clientSocket) {
             send(clientSocket, generalPermission.c_str(), generalPermission.length(), 0);
 
 
-            //½ÓÊÕ "plz enter the groupPermission"
+            //æ¥æ”¶ "plz enter the groupPermission"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -980,7 +1002,7 @@ void fsMode(int clientSocket) {
             cin >> groupPermission;
             send(clientSocket, groupPermission.c_str(), groupPermission.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -992,7 +1014,7 @@ void fsMode(int clientSocket) {
             command = "9. change File Owner";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1001,7 +1023,7 @@ void fsMode(int clientSocket) {
             cin >> path_9;
             send(clientSocket, path_9.c_str(), path_9.length(), 0);
 
-            //½ÓÊÕ "plz enter the new owner"
+            //æ¥æ”¶ "plz enter the new owner"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1010,7 +1032,7 @@ void fsMode(int clientSocket) {
             cin >> newOwner;
             send(clientSocket, newOwner.c_str(), newOwner.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -1022,7 +1044,7 @@ void fsMode(int clientSocket) {
             command = "10. adjust User Group";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1031,7 +1053,7 @@ void fsMode(int clientSocket) {
             cin >> path_10;
             send(clientSocket, path_10.c_str(), path_10.length(), 0);
 
-            //½ÓÊÕ "plz enter the targetUsername"
+            //æ¥æ”¶ "plz enter the targetUsername"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1041,7 +1063,7 @@ void fsMode(int clientSocket) {
             send(clientSocket, targetUsername.c_str(), targetUsername.length(), 0);
 
 
-            //½ÓÊÕ "plz enter the addUser"
+            //æ¥æ”¶ "plz enter the addUser"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1050,7 +1072,7 @@ void fsMode(int clientSocket) {
             cin >> addUser;
             send(clientSocket, addUser.c_str(), addUser.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -1062,7 +1084,7 @@ void fsMode(int clientSocket) {
             command = "11. write append File";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1071,7 +1093,7 @@ void fsMode(int clientSocket) {
             cin >> path_11;
             send(clientSocket, path_11.c_str(), path_11.length(), 0);
 
-            //½ÓÊÕ plz enter context(type '-1' to finish)
+            //æ¥æ”¶ plz enter context(type '-1' to finish)
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1080,13 +1102,13 @@ void fsMode(int clientSocket) {
             context_11.clear();
             line.clear();
             while (getline(cin, line)) {
-                if (line == "-1") break; // Óöµ½ÌØÊâ±êÖ¾Í£Ö¹ÊäÈë
-                context_11 += line + "\n";  // ½«Ã¿ĞĞÄÚÈİ¼ÓÈë context_11
+                if (line == "-1") break; // é‡åˆ°ç‰¹æ®Šæ ‡å¿—åœæ­¢è¾“å…¥
+                context_11 += line + "\n";  // å°†æ¯è¡Œå†…å®¹åŠ å…¥ context_11
             }
             send(clientSocket, context_11.c_str(), context_11.length(), 0);
 
 
-            //½ÓÊÕ½á¹û
+            //æ¥æ”¶ç»“æœ
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1098,7 +1120,7 @@ void fsMode(int clientSocket) {
             command = "12. enable File Snapshot";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1107,7 +1129,7 @@ void fsMode(int clientSocket) {
             cin >> path_12;
             send(clientSocket, path_12.c_str(), path_12.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -1119,7 +1141,7 @@ void fsMode(int clientSocket) {
             command = "13. list File Snapshot";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1128,7 +1150,7 @@ void fsMode(int clientSocket) {
             cin >> path_13;
             send(clientSocket, path_13.c_str(), path_13.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -1138,7 +1160,7 @@ void fsMode(int clientSocket) {
             command = "14. use File Snapshots";
             send(clientSocket, command.c_str(), command.length(), 0);
 
-            //½ÓÊÕ "plz enter the path"
+            //æ¥æ”¶ "plz enter the path"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1147,7 +1169,7 @@ void fsMode(int clientSocket) {
             cin >> path_14;
             send(clientSocket, path_14.c_str(), path_14.length(), 0);
 
-            //½ÓÊÕ "plz enter the time"
+            //æ¥æ”¶ "plz enter the time"
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0)
             {
@@ -1156,7 +1178,7 @@ void fsMode(int clientSocket) {
             cin >> time_14;
             send(clientSocket, time_14.c_str(), time_14.length(), 0);
 
-            //½ÓÊÕresult
+            //æ¥æ”¶result
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             if (bytesRead > 0) {
                 std::cout << std::string(buffer, bytesRead) << std::endl;
@@ -1176,6 +1198,15 @@ void fsMode(int clientSocket) {
     }
 }
 
+void ExitMode(int clientSocket) {
+    char buffer[BUFFER_SIZE];
+
+    //å‘é€ç»™æœåŠ¡å™¨æƒ³è¦è¿›å…¥exitæ“ä½œé¡µé¢
+    std::string message;
+    message = "exit";
+    send(clientSocket, message.c_str(), message.length(), 0);
+}
+
 void Welcome(int clientSocket) {
     char buffer[BUFFER_SIZE];
     while (true) {
@@ -1193,6 +1224,7 @@ void Welcome(int clientSocket) {
 
         switch (choice) {
         case 0:
+            ExitMode(clientSocket);
             exit(0);
         case 1:
             PatientMode(clientSocket);

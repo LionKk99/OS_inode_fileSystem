@@ -31,11 +31,11 @@ fileSystem::fileSystem() {
     rootInode->fileSize = 0;
     rootInode->createdTime = time(nullptr);  // 设置根目录的创建时间
     rootInode->modifiedTime = time(nullptr);  // 设置根目录的修改时间
-    strcpy_s(rootInode->creator, "admin");  // 设置根目录的创建者为 "admin"
+    strcpy(rootInode->creator, "admin");  // 设置根目录的创建者为 "admin"
     rootInode->permission[0] = N;  // 设置根目录的其他用户权限
     rootInode->permission[1] = W;  // 设置根目录的用户组权限为可读写
     rootInode->groupNum = 1;  // 根目录用户组只有一个成员
-    strcpy_s(rootInode->group[0], "admin");  // 设置根目录的用户组为 "admin"
+    strcpy(rootInode->group[0], "admin");  // 设置根目录的用户组为 "admin"
 
     // 创建根目录的目录块，并分配 block 0
     DirectoryBlock* rootDirBlock = reinterpret_cast<DirectoryBlock*>(&blockMem[0]);
@@ -44,7 +44,7 @@ fileSystem::fileSystem() {
         rootDirBlock->inodeID[i] = -1;  // 初始化目录块为空
     }
     // 设置根目录目录块中的第一个条目为根目录本身
-    strcpy_s(rootDirBlock->fileName[0], "/");
+    strcpy(rootDirBlock->fileName[0], "/");
     rootDirBlock->inodeID[0] = 0;  // 将根目录的 inodeID 设置为 0
 
     // 更新位图，标记根目录使用了 inode 0 和 block 0
@@ -179,7 +179,7 @@ bool fileSystem::createDirectory(const char* path, const char* user) {
             newInode->fileSize = 0;
             newInode->createdTime = time(nullptr);
             newInode->modifiedTime = time(nullptr);
-            strcpy_s(newInode->creator, user);  // 设置创建者为传入的用户
+            strcpy(newInode->creator, user);  // 设置创建者为传入的用户
             newInode->permission[0] = N;     // 设置其他用户无权限
             newInode->permission[1] = W;     // 设置用户组权限为读写
 
@@ -198,7 +198,7 @@ bool fileSystem::createDirectory(const char* path, const char* user) {
 
             // 在父目录中添加新目录
             parentDirBlock->inodeID[i] = newInodeID;
-            strcpy_s(parentDirBlock->fileName[i], newDirName.c_str());
+            strcpy(parentDirBlock->fileName[i], newDirName.c_str());
 
             dirCreated = true;
             break;
@@ -269,7 +269,7 @@ bool fileSystem::createFile(const char* path, const char* user) {
             newInode->fileSize = 0;
             newInode->createdTime = time(nullptr);
             newInode->modifiedTime = time(nullptr);
-            strcpy_s(newInode->creator, user);  // 设置创建者为传入的用户
+            strcpy(newInode->creator, user);  // 设置创建者为传入的用户
             newInode->permission[0] = N;  // 设置其他用户无权限
             newInode->permission[1] = W;  // 设置用户组权限为读写
             newInode->blockNum = 4;
@@ -293,7 +293,7 @@ bool fileSystem::createFile(const char* path, const char* user) {
 
             // 在父目录中添加新文件
             parentDirBlock->inodeID[i] = newInodeID;
-            strcpy_s(parentDirBlock->fileName[i], newFileName.c_str());
+            strcpy(parentDirBlock->fileName[i], newFileName.c_str());
 
             fileCreated = true;
             break;
@@ -358,7 +358,7 @@ bool fileSystem::deleteDirectory(const char* path, const char* user) {//删除�
     for (int i = 0; i < ENTRY_NUMBER; ++i) {
         if (strcmp(parentDirBlock->fileName[i], targetDirName.c_str()) == 0) {  
             parentDirBlock->inodeID[i] = -1;
-            strcpy_s(parentDirBlock->fileName[i], "nan");  // 设置为 "nan"
+            strcpy(parentDirBlock->fileName[i], "nan");  // 设置为 "nan"
             break;
         }
     }
@@ -436,7 +436,7 @@ bool fileSystem::writeFile(const char* path, const char* user, const std::string
 */
 
 //一个文件最多分配16个fileblock
-bool fileSystem::writeFile(const char* path, const char* user, const std::string& context,bool flag = 1) {
+bool fileSystem::writeFile(const char* path, const char* user, const std::string& context,bool flag) {
 
     // 1. 确保路径有效
     if (path == nullptr || strlen(path) == 0) {
@@ -463,10 +463,20 @@ bool fileSystem::writeFile(const char* path, const char* user, const std::string
         return false;
     }
 
-    // 4. 检查用户权限
-    if (strcmp(fileInode->creator, user) != 0 && fileInode->permission[1] != W && !isAdmin(user)){
-        std::cout << "Error: User does not have write permission." << std::endl;
-        return false;
+    // 4. 检查用户是否有写权限
+    if (strcmp(fileInode->creator, user) != 0 && fileInode->permission[0] != W && !isAdmin(user)) {
+        bool hasGroupWritePermission = false;
+
+        // 检查用户是否在文件的用户组中，并且该组的权限是W
+        if (isInGroup(path, user) && fileInode->permission[1] == W) {
+            hasGroupWritePermission = true;
+        }
+
+        // 如果用户既不是文件的创建者，也没有组权限且权限为N，拒绝访问
+        if (!hasGroupWritePermission) {
+            std::cerr << "Error: User does not have write permission." << std::endl;
+            return false;
+        }
     }
 
     size_t bytesWritten = 0;
@@ -578,7 +588,7 @@ bool fileSystem::writeFile(const char* path, const char* user, const std::string
         for (int i = 0; i < MAX_FS; i++) {
             if (fileInode->FSoperation[i] == ' ') {
                 current = i;
-                strncpy_s(fileInode->FStime[i], time.c_str(), sizeof(fileInode->FStime[i]) - 1);
+                strncpy(fileInode->FStime[i], time.c_str(), sizeof(fileInode->FStime[i]) - 1);
                 fileInode->FStime[i][sizeof(fileInode->FStime[i]) - 1] = '\0'; // 确保以 '\0' 结尾
                 fileInode->FSoperation[i] = 'W';
                 break;
@@ -726,7 +736,7 @@ bool fileSystem::writeAppendFile(const char* path, const char* user, const std::
         for (int i = 0; i < MAX_FS; i++) {
             if (fileInode->FSoperation[i] == ' ') {
                 current = i;
-                strncpy_s(fileInode->FStime[i], time.c_str(), sizeof(fileInode->FStime[i]) - 1);
+                strncpy(fileInode->FStime[i], time.c_str(), sizeof(fileInode->FStime[i]) - 1);
                 fileInode->FStime[i][sizeof(fileInode->FStime[i]) - 1] = '\0'; // 确保以 '\0' 结尾
                 fileInode->FSoperation[i] = 'A';
                 break;
@@ -834,11 +844,21 @@ std::string fileSystem::readFile(const char* path, const char* user) {
         std::cerr << "Error: Target is not a file." << std::endl;
         return "";
     }
-
-    // 4. 检查用户权限
+        
+    // 4. 检查用户权限/用户组权限
     if (strcmp(fileInode->creator, user) != 0 && fileInode->permission[0] == N && !isAdmin(user)) {
-        std::cerr << "Error: User does not have read permission." << std::endl;
-        return "";
+        bool hasGroupPermission = false;
+
+        // 检查用户是否属于该文件的用户组并且用户组权限不为N
+        if (isInGroup(path, user) && fileInode->permission[1] != N) {
+            hasGroupPermission = true;
+        }
+
+        // 如果用户既不是创建者，又没有组权限且权限为N，拒绝访问
+        if (!hasGroupPermission) {
+            std::cerr << "Error: User does not have read permission." << std::endl;
+            return "";
+        }
     }
 
     // 5. 读取文件数据
@@ -914,7 +934,7 @@ bool fileSystem::deleteFile(const char* path, const char* user) {
     for (int i = 0; i < ENTRY_NUMBER; ++i) {
         if (strcmp(parentDirBlock->fileName[i], targetFileName.c_str()) == 0) {
             parentDirBlock->inodeID[i] = -1;
-            strcpy_s(parentDirBlock->fileName[i], "nan");  // 标记为"nan"或其他空标记
+            strcpy(parentDirBlock->fileName[i], "nan");  // 标记为"nan"或其他空标记
             break;
         }
     }
@@ -971,7 +991,7 @@ bool fileSystem::deleteFile(const char* path, const char* user) {
     for (int i = 0; i < ENTRY_NUMBER; ++i) {
         if (strcmp(parentDirBlock->fileName[i], targetFileName.c_str()) == 0) {
             parentDirBlock->inodeID[i] = -1;
-            strcpy_s(parentDirBlock->fileName[i], "nan");  // 标记为"nan"或其他空标记
+            strcpy(parentDirBlock->fileName[i], "nan");  // 标记为"nan"或其他空标记
             break;
         }
     }
@@ -1352,12 +1372,20 @@ fileSystem::~fileSystem() {
     saveFileSystem(FILE_NAME);
 }
 
-void fileSystem::lockMutex() {
-    mutex_.lock();    
+void fileSystem::lockFS() {
+    FS.lock();    
 }
 
-void fileSystem::unlockMutex() {
-    mutex_.unlock();   
+void fileSystem::unlockFS() {
+    FS.unlock();   
+}
+
+void fileSystem::lockRC() {
+    RC.lock();
+}
+
+void fileSystem::unlockRC() {
+    RC.unlock();
 }
 
 
@@ -1772,9 +1800,9 @@ bool fileSystem::changeFileOwner(const std::string& filePath, const std::string&
     }
 
     // 4. 更改文件的拥有者
-    strcpy_s(fileInode->creator, newOwner.c_str());  // 更新文件的创建者为新拥有者     
+    strcpy(fileInode->creator, newOwner.c_str());  // 更新文件的创建者为新拥有者     
 
-    std::cout << filePath << "Owner changed successfully :" << "from" << oldOwner << "to" << newOwner << std::endl;
+    std::cout << filePath << " Owner changed successfully :" << " from " << oldOwner << " to " << newOwner << std::endl;
     return true;
 }
 
@@ -1805,7 +1833,7 @@ bool fileSystem::adjustUserGroup(const std::string& filePath, const std::string&
         bool userAdded = false;
         for (int i = 0; i < MAX_GROUP_NUM; ++i) {
             if (fileInode->group[i][0] == '\0') {  // 找到空的位置
-                strcpy_s(fileInode->group[i], targetUsername.c_str());
+                strcpy(fileInode->group[i], targetUsername.c_str());
                 userAdded = true;
                 break;
             }
@@ -2042,7 +2070,7 @@ std::string fileSystem::getCurrentDateTime() {
     // 获取当前时间
     std::time_t t = std::time(0);  // 获取当前时间戳
     std::tm now;
-    localtime_s(&now, &t);  // 使用 localtime_s 替代 localtime
+    localtime_r(&t, &now);  // 使用 localtime_s 替代 localtime
 
     // 使用 stringstream 构造格式化日期字符串
     std::stringstream ss;
@@ -2077,7 +2105,7 @@ bool fileSystem::enableFileSnapshot(const std::string& filePath, const std::stri
     }
     //设置为开启,并作为第一次文件快照（全量存储）
     fileInode->FS = 1;
-    strncpy_s(fileInode->FStime[0], time.c_str(), sizeof(fileInode->FStime[0]) - 1);
+    strncpy(fileInode->FStime[0], time.c_str(), sizeof(fileInode->FStime[0]) - 1);
     fileInode->FStime[0][sizeof(fileInode->FStime[0]) - 1] = '\0'; // 确保以 '\0' 结尾
     fileInode->FSoperation[0] = 'W';
 
@@ -2166,6 +2194,24 @@ bool fileSystem::useFileSnapshots(const std::string& filePath, const std::string
 
     // 写入源文件       
 
-    return writeFile(filePath.c_str(), operatorName.c_str(), context);
+    return writeFile(filePath.c_str(), operatorName.c_str(), context, 0);
     
+}
+
+bool fileSystem::isInGroup(const std::string& filePath, const std::string& user) {
+
+    // 查找文件的 inode
+    Inode* fileInode = findInodeByPath(filePath.c_str());
+    if (!fileInode) {
+        std::cout << "Error: File not found!" << std::endl;
+        return false;  // 文件不存在
+    }
+
+    for (int i = 0; i < MAX_GROUP_NUM; i++) {
+        if (strcmp(fileInode->group[i],user.c_str()) == 0) {
+            return true;//找到用户
+        }
+    }
+
+    return false;
 }

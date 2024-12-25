@@ -13,7 +13,7 @@
 #include <fstream>						
 #include <iomanip>						
 #include <chrono>
-#include  "fileSystem.h"
+#include  "filesystem.h"
 
 #define BUFFER_SIZE 1024*16
 
@@ -44,14 +44,40 @@ void AdministratorMode(int clientSocket) {
         std::string pd(buffer, bytesRead);        
         password = pd;
 
+        //è¯»è€…è·å¾—é”
+        fs.lockRC();
+        if (fs.rc == 0) {
+            fs.lockFS();
+        }
+        fs.rc++;
+        fs.unlockRC();
+
         if (fs.userLogin(ADMIN, username, password)) {
             reply = "admin log in success";
             send(clientSocket, reply.c_str(), reply.length(), 0);
+
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }            
+            fs.unlockRC();
+
             break;
         }
         else {
             reply = "user name or password do not match,plz try again";
             send(clientSocket, reply.c_str(), reply.length(), 0);
+
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
+
             return;
         }
     }
@@ -66,19 +92,19 @@ void AdministratorMode(int clientSocket) {
         }
         std::string command(buffer, bytesRead);
 
-        //ÃüÁî·´À¡
+        //å‘½ä»¤åé¦ˆ
 
-        // 0. ÍË³öµÇÂ¼
+        // 0. é€€å‡ºç™»å½•
         if (command == "0. back to upper directory") {
             cout << "admin user:" << username << " log out" << endl;
             return;
         }
-        // 1. ´´½¨ĞÂÓÃ»§
+        // 1. åˆ›å»ºæ–°ç”¨æˆ·
         else if (command == "1. create user") {
             reply = "plz enter new user type : admin -- 0, doctor -- 1, patient -- 2";
             send(clientSocket, reply.c_str(), reply.length(), 0);
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
-            std::string usertype(buffer, bytesRead);//ÓÃ»§ÀàĞÍ
+            std::string usertype(buffer, bytesRead);//ç”¨æˆ·ç±»å‹
             int userType = -1;
             if (usertype == "0") {
                 userType = 0;
@@ -96,14 +122,18 @@ void AdministratorMode(int clientSocket) {
             reply = "plz enter username";
             send(clientSocket, reply.c_str(), reply.length(), 0);
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
-            std::string newUserName(buffer, bytesRead);//ÓÃ»§Ãû
+            std::string newUserName(buffer, bytesRead);//ç”¨æˆ·å
 
             reply = "plz enter user password";
             send(clientSocket, reply.c_str(), reply.length(), 0);
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string newUserPW(buffer, bytesRead);
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.createUser(userType, newUserName, newUserPW)) {
                 reply = "successfully create a new user:" + newUserName;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -113,13 +143,16 @@ void AdministratorMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
+
         }
-        // 2. É¾³ıÓÃ»§
+        // 2. åˆ é™¤ç”¨æˆ·
         else if (command == "2. delete user") {
             reply = "plz enter delete user type : admin -- 0, doctor -- 1, patient -- 2";
             send(clientSocket, reply.c_str(), reply.length(), 0);
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
-            std::string d_usertype(buffer, bytesRead);//ÓÃ»§ÀàĞÍ
+            std::string d_usertype(buffer, bytesRead);//ç”¨æˆ·ç±»å‹
             int d_userType = -1;
             if (d_usertype == "0") {
                 d_userType = 0;
@@ -137,10 +170,14 @@ void AdministratorMode(int clientSocket) {
             reply = "plz enter delete username";
             send(clientSocket, reply.c_str(), reply.length(), 0);
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
-            std::string d_UserName(buffer, bytesRead);//ÓÃ»§Ãû
+            std::string d_UserName(buffer, bytesRead);//ç”¨æˆ·å
                        
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+            
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.deleteUser(username,d_userType, d_UserName)) {
                 reply = "successfully delete user:" + d_UserName;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -150,11 +187,18 @@ void AdministratorMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
+
         }
-        // 3. ´´½¨±¸·İ
+        // 3. åˆ›å»ºå¤‡ä»½
         else if (command == "3. create backup") {
             
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.saveBackUp()) {
                 reply = "successfully create a backup:" ;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -164,11 +208,23 @@ void AdministratorMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
+
         }
-        // 4. ±¸·İÄ¿Â¼
+        // 4. å¤‡ä»½ç›®å½•
         else if (command == "4. list backup") {
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //è¯»è€…è·å¾—é”
+            fs.lockRC();
+            if (fs.rc == 0) {
+                fs.lockFS();
+            }
+            fs.rc++;
+            fs.unlockRC();
+
             if (fs.listBackUp().empty() ){
                 reply = "backup list is empty";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -178,8 +234,16 @@ void AdministratorMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
+
         }
-        // 5. µ¼Èë±¸·İ
+        // 5. å¯¼å…¥å¤‡ä»½
         else if (command == "5. load backup") {
 
             reply = "plz enter backup file path";
@@ -187,7 +251,11 @@ void AdministratorMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string backup_file_path(buffer, bytesRead);
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.loadBackUp(backup_file_path)) {
                 reply = "successfully load a backup:" + backup_file_path;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -197,14 +265,17 @@ void AdministratorMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
+
         }       
-        // 6. ĞŞ¸ÄÓÃ»§ÃÜÂë
+        // 6. ä¿®æ”¹ç”¨æˆ·å¯†ç 
         else if (command == "6. change user password") {                   
                       
             reply = "plz enter user type : admin -- 0, doctor -- 1, patient -- 2";
             send(clientSocket, reply.c_str(), reply.length(), 0);
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
-            std::string usertype(buffer, bytesRead);//ÓÃ»§ÀàĞÍ
+            std::string usertype(buffer, bytesRead);//ç”¨æˆ·ç±»å‹
             int userType = -1;
             if (usertype == "0") {
                 userType = 0;
@@ -229,7 +300,11 @@ void AdministratorMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string UserPW(buffer, bytesRead);
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.changePassword(userType, UserName, UserPW)) {
                 reply = "successfully change user password: " + UserName;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -239,6 +314,8 @@ void AdministratorMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
 
         }
     }
@@ -265,14 +342,40 @@ void DoctorMode(int clientSocket) {
         std::string pd(buffer, bytesRead);
         password = pd;
 
+        //è¯»è€…è·å¾—é”
+        fs.lockRC();
+        if (fs.rc == 0) {
+            fs.lockFS();
+        }
+        fs.rc++;
+        fs.unlockRC();
+
         if (fs.userLogin(DOCTOR, username, password)) {
             reply = "doctor log in success";
             send(clientSocket, reply.c_str(), reply.length(), 0);
+
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
+
             break;
         }
         else {
             reply = "user name or password do not match,plz try again";
             send(clientSocket, reply.c_str(), reply.length(), 0);
+
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
+
             return;
         }
     }
@@ -287,9 +390,9 @@ void DoctorMode(int clientSocket) {
         }
         std::string command(buffer, bytesRead);
 
-        //ÃüÁî·´À¡
+        //å‘½ä»¤åé¦ˆ
 
-        // 0. ÍË³öµÇÂ¼
+        // 0. é€€å‡ºç™»å½•
         if (command == "0. back to upper directory") {
             cout << "doctor user:" << username << " log out" << endl;
             return;
@@ -297,7 +400,16 @@ void DoctorMode(int clientSocket) {
         // 1. 
         else if (command == "1. list records") {
             
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+            
+            //è¯»è€…è·å¾—é”
+            fs.lockRC();
+            if (fs.rc == 0) {
+                fs.lockFS();
+            }
+            fs.rc++;
+            fs.unlockRC();
+
             if (fs.listRecords().empty()) {
                 reply = "records list is empty";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -306,6 +418,14 @@ void DoctorMode(int clientSocket) {
                 reply = fs.listRecords();
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
+
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
 
         }
         //2
@@ -321,7 +441,11 @@ void DoctorMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string context(buffer, bytesRead);
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+            
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.writeAppendRecords(Pname.c_str(),username.c_str(),context)) {
                 reply = "successfully write Append Records";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -329,7 +453,10 @@ void DoctorMode(int clientSocket) {
             else {
                 reply = "fail to write Append Records";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
-            }           
+            }       
+
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
 
         }
         else if (command == "3. read records") {
@@ -339,7 +466,16 @@ void DoctorMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string recordsName(buffer, bytesRead);//
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //è¯»è€…è·å¾—é”
+            fs.lockRC();
+            if (fs.rc == 0) {
+                fs.lockFS();
+            }
+            fs.rc++;
+            fs.unlockRC();
+
             if (fs.readRecords(recordsName.c_str()).empty()) {
                 reply = "this records is empty";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -348,6 +484,14 @@ void DoctorMode(int clientSocket) {
                 reply = fs.readRecords(recordsName.c_str());
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }           
+
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
 
         }
         else if (command == "4. release Appointments") {
@@ -367,7 +511,11 @@ void DoctorMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string day(buffer, bytesRead);//
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.releaseAppointments (username.c_str(),year,month,day)) {
                 reply = "successfully release Appointments";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -376,6 +524,9 @@ void DoctorMode(int clientSocket) {
                 reply = "fail to release Appointments";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
+
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
 
         }
         else if (command == "5. revocation Appointments") {
@@ -395,7 +546,11 @@ void DoctorMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string day(buffer, bytesRead);//
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.revocationAppointments(username.c_str(), year, month, day)) {
                 reply = "successfully revocation Appointments";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -405,10 +560,22 @@ void DoctorMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
+
         }
         else if (command == "6. list Appointments") {
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //è¯»è€…è·å¾—é”
+            fs.lockRC();
+            if (fs.rc == 0) {
+                fs.lockFS();
+            }
+            fs.rc++;
+            fs.unlockRC();
+
             if (fs.listAppointments().empty()) {
                 reply = "Appointments list is empty";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -417,6 +584,15 @@ void DoctorMode(int clientSocket) {
                 reply = fs.listAppointments();
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
+
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
+
         }
         else if (command == "7. read Appointments") {
 
@@ -435,17 +611,33 @@ void DoctorMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string day(buffer, bytesRead);//
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //è¯»è€…è·å¾—é”
+            fs.lockRC();
+            if (fs.rc == 0) {
+                fs.lockFS();
+            }
+            fs.rc++;
+            fs.unlockRC();
+
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
             if (fs.readAppointments(username.c_str(), year, month, day).empty()) {
                 reply = "this Appointments is empty";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
             else {
-                reply = fs.readAppointments(username.c_str(), year, month, day);
+                reply = year + "-" + month + "-" + day + " " + "appointment\n" + fs.readAppointments(username.c_str(), year, month, day);
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
             }
+            fs.unlockRC();
+
+        }
     }
 }
 
@@ -469,14 +661,36 @@ void PatientMode(int clientSocket) {
         std::string pd(buffer, bytesRead);
         password = pd;
 
+        //è¯»è€…è·å¾—é”
+        fs.lockRC();
+        if (fs.rc == 0) {
+            fs.lockFS();
+        }
+        fs.rc++;
+        fs.unlockRC();
+
         if (fs.userLogin(PATIENT, username, password)) {
             reply = "patient log in success";
             send(clientSocket, reply.c_str(), reply.length(), 0);
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
             break;
         }
         else {
             reply = "user name or password do not match,plz try again";
             send(clientSocket, reply.c_str(), reply.length(), 0);
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
             return;
         }
     }
@@ -492,9 +706,9 @@ void PatientMode(int clientSocket) {
         }
         std::string command(buffer, bytesRead);
 
-        //ÃüÁî·´À¡
+        //å‘½ä»¤åé¦ˆ
 
-        // 0. ÍË³öµÇÂ¼
+        // 0. é€€å‡ºç™»å½•
         if (command == "0. back to upper directory") {
             cout << "patient user:" << username << " log out" << endl;
             return;
@@ -502,7 +716,16 @@ void PatientMode(int clientSocket) {
         // 1. 
         else if (command == "1. read my records") {
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //è¯»è€…è·å¾—é”
+            fs.lockRC();
+            if (fs.rc == 0) {
+                fs.lockFS();
+            }
+            fs.rc++;
+            fs.unlockRC();
+
             string filename = username + ".txt";
             if (fs.readRecords(filename.c_str()).empty()) {
                 reply = "Records is empty";
@@ -513,11 +736,27 @@ void PatientMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
         }
         // 2.
         else if (command == "2. list all Appointments") {
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
+
+            //è¯»è€…è·å¾—é”
+            fs.lockRC();
+            if (fs.rc == 0) {
+                fs.lockFS();
+            }
+            fs.rc++;
+            fs.unlockRC();
+
             if (fs.listAppointments().empty()) {
                 reply = "Appointments list is empty";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -527,6 +766,13 @@ void PatientMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //è¯»è€…å½’è¿˜é”
+            fs.lockRC();
+            fs.rc--;
+            if (fs.rc == 0) {
+                fs.unlockFS();
+            }
+            fs.unlockRC();
         }
         //3
         else if (command == "3. make my Appointments") {
@@ -551,6 +797,9 @@ void PatientMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string day(buffer, bytesRead);//
 
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
             if (fs.writeAppointments(username.c_str(),d_name.c_str(),year,month,day)) {
                 reply = "Appointments write succssful, plz remember you appointment time.";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -560,6 +809,8 @@ void PatientMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
         }
         //4
         else if (command == "4. delete my Appointments") {
@@ -584,7 +835,10 @@ void PatientMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string day(buffer, bytesRead);//
 
-            if (fs.writeAppointments(username.c_str(), d_name.c_str(), year, month, day)) {
+            //å†™è€…è¯·æ±‚é”
+            fs.lockFS();
+
+            if (fs.deleteAppointments(username.c_str(), d_name.c_str(), year, month, day)) {
                 reply = "Appointments delete succssful";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
@@ -593,6 +847,8 @@ void PatientMode(int clientSocket) {
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
 
+            //å†™è€…å½’è¿˜é”
+            fs.unlockFS();
         }
 
     }
@@ -603,13 +859,23 @@ void fsMode(int clientSocket) {
     int bytesRead;
     string username = "admin";   
     string reply = "";
+        
+    //è·å–ç”¨æˆ·åï¼ˆä¸åŠ ä»¥éªŒè¯ï¼‰
+    reply = "plz enter user name";
+    send(clientSocket, reply.c_str(), reply.length(), 0);
+    bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+    std::string name(buffer, bytesRead);
 
-    //½øÈëÇ°ÏÈÇëÇó¶ÁËø  
+    username = name;
 
-    cout << "welcome to file system mode" << endl;
-    
+    //è¿›å…¥å‰å…ˆè¯·æ±‚è¯»é”  
 
-    //ÃüÁî·´À¡      
+    fs.lockFS();//å¯¹æ–‡ä»¶ç³»ç»Ÿä¸Šé”
+        
+    reply = "welcome to file system mode";
+    send(clientSocket, reply.c_str(), reply.length(), 0);
+
+    //å‘½ä»¤åé¦ˆ      
     while (1) {
 
         bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
@@ -619,12 +885,12 @@ void fsMode(int clientSocket) {
         }
         std::string command(buffer, bytesRead);
 
-        // 0. ÍË³öµÇÂ¼  
+        // 0. é€€å‡ºç™»å½•  
         if (command == "0. back to upper directory") {
             cout << "quit file system" << endl;
 
-            //´Ë´¦Ğè¹é»¹È¨ÏŞ
-
+            //æ­¤å¤„éœ€å½’è¿˜æƒé™
+            fs.unlockFS();//è§£é”æ–‡ä»¶ç³»ç»Ÿ
             return;
         }
         // 1
@@ -704,7 +970,7 @@ void fsMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string context(buffer, bytesRead);
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
             if (fs.writeFile(path.c_str(),username.c_str(),context,1)) {
                 reply = "successfully write file" + path;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -722,7 +988,7 @@ void fsMode(int clientSocket) {
             std::string path(buffer, bytesRead);//
                         
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
             if (fs.readFile(path.c_str(), username.c_str()).empty()) {
                 reply = "this file is empty";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -759,39 +1025,38 @@ void fsMode(int clientSocket) {
             send(clientSocket, reply.c_str(), reply.length(), 0);
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string p1(buffer, bytesRead);
-            char P1 = 'N';
+            char P1 = N;
             if (p1 == "W" || p1 == "w") {
-                P1 = 'W';
+                P1 = W;
             }
             else if (p1 == "R" || p1 == "r") {
-                P1 = 'R';
+                P1 = R;
             }
             else {
-                P1 = 'N';
+                P1 = N;
             }
 
             reply = "plz enter the groupPermission: N - No Permission, R - Reading Permission, W - Writing Permission";
             send(clientSocket, reply.c_str(), reply.length(), 0);
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string p2(buffer, bytesRead);
-            char P2 = 'R';
+            char P2 = R;
             if (p2 == "N" || p2 == "n") {
-                P2 = 'N';
+                P2 = N;
             }
             else if (p2 == "W" || p2 == "w") {
-                P2 = 'W';
+                P2 = W;
             }
             else {
-                P2 = 'R';
+                P2 = R;
             }
-
             
             if (fs.changeFilePermission(username.c_str(),path.c_str(),P1,P2)) {
-                reply = "successfully change File Permission: generalPermission - " + std::string(1, P1) + "| groupPermission - " + std::string(1, P2);
+                reply = "successfully change File Permission: generalPermission - " + p1 + "| groupPermission - " + p2;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
             else {
-                reply = "fail to change File Permission to: generalPermission - " + std::string(1, P1) + "| groupPermission - " + std::string(1, P2);
+                reply = "fail to change File Permission to: generalPermission - " + p1 + "| groupPermission - " + p2;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
             
@@ -865,7 +1130,7 @@ void fsMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string context(buffer, bytesRead);
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
             if (fs.writeAppendFile(path.c_str(), username.c_str(), context)) {
                 reply = "successfully write append file" + path;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -884,7 +1149,7 @@ void fsMode(int clientSocket) {
             std::string path(buffer, bytesRead);//
 
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
             if (fs.enableFileSnapshot(path,username)) {
                 reply = "File Snapshot open: " + path;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -902,7 +1167,7 @@ void fsMode(int clientSocket) {
             std::string path(buffer, bytesRead);//
 
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
             if (fs.listFileSnapshot(path).empty()) {
                 reply = "File Snapshot list is empty";
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -924,7 +1189,7 @@ void fsMode(int clientSocket) {
             bytesRead = recv(clientSocket, buffer, BUFFER_SIZE, 0);
             std::string time(buffer, bytesRead);//
 
-            //´Ë´¦ºóÃæĞèÒª¼ÓËø
+            //æ­¤å¤„åé¢éœ€è¦åŠ é”
             if (fs.useFileSnapshots(path,time,username)) {
                 reply = "File Snapshot imply succussful: " + path;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
@@ -933,11 +1198,18 @@ void fsMode(int clientSocket) {
                 reply = "File Snapshot imply fail: " + path;
                 send(clientSocket, reply.c_str(), reply.length(), 0);
             }
-        }
-            
-
+        }         
 
     }
+
+    
+
+}
+
+void ExitMode(int clientSocket) {
+    fs.lockFS();//å¯¹æ–‡ä»¶ç³»ç»Ÿä¸Šé”
+    fs.saveFileSystem(FILE_NAME);
+    fs.unlockFS();
 }
 
 void handleClient(int clientSocket) {
@@ -958,6 +1230,9 @@ void handleClient(int clientSocket) {
         }
         else if (command == "fs") {
             fsMode(clientSocket);
+        }
+        else if (command == "exit") {
+            ExitMode(clientSocket);
         }
     }
 

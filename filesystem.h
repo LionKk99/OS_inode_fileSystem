@@ -51,7 +51,7 @@ struct Inode {
     char permission[2] = { 'N', 'R' }; // [0]是一般用户（除创建者和用户组）权限(一般为N)，[1]是用户组的权限 (eg,W,R,N)
     char creator[MAX_LENGTH_USERNAME]; //创建者名字
     int groupNum;                      //用户组内数量
-    char group[MAX_GROUP_NUM][MAX_LENGTH_USERNAME]; //用户组（'lihua','zhangsan'）
+    char group[MAX_GROUP_NUM][MAX_LENGTH_USERNAME] = {}; //用户组（'lihua','zhangsan'）
 
     //文件快照
     bool FS = 0; //是否开启    
@@ -73,7 +73,7 @@ struct DirectoryBlock { //路径block下记载的是该文件夹下所有内容�
     DirectoryBlock() {
         // 初始化 fileName 为 "nan" 且 inodeID 为 -1
         for (int i = 0; i < ENTRY_NUMBER; ++i) {
-            strcpy_s(fileName[i], "nan");  // 用 "nan" 填充 fileName
+            strcpy(fileName[i], "nan");  // 用 "nan" 填充 fileName
             inodeID[i] = -1;             // 将 inodeID 设置为 -1
         }
     }
@@ -105,7 +105,7 @@ public:
     bool deleteDirectory(const char* path, const char* user); //成功1，失败0  
     std::string displayDirectory(const char *path);//显示传入路径下的目录树
     bool createFile(const char* path, const char* user);
-    bool writeFile(const char* path, const char* user, const std::string& context,bool flag);//写入内容过大，或者文件不存在都会导致失败 ; 由于文件快照，引入flag，仅当flag为1时是真正的写入操作，为0时实际上是writeappend
+    bool writeFile(const char* path, const char* user, const std::string& context,bool flag = 1);//写入内容过大，或者文件不存在都会导致失败 ; 由于文件快照，引入flag，仅当flag为1时是真正的写入操作，为0时实际上是writeappend
     bool writeAppendFile(const char* path, const char* user, const std::string& context);
     std::string readFile(const char* path, const char* user);
     bool deleteFile(const char* path, const char* user);
@@ -155,6 +155,20 @@ public:
     bool useFileSnapshots(const std::string& filePath, const std::string& time, const std::string& operatorName);
 
     std::string getCurrentDateTime();//获取时间
+
+    //并发控制
+    std::mutex FS;  // 用于文件系统操作的互斥锁
+    std::mutex RC;  // 用于互斥访问int rc
+    int rc = 0; //读者人数
+
+    //信号量，读者写者问题
+    void lockFS();  // 加锁
+    void unlockFS();  // 解锁
+
+    void lockRC();  // 加锁
+    void unlockRC();  // 解锁
+    
+
 private:
     //数据成员    
     Inode inodeMem[INODE_NUMBER];  // 存储所有的inode
@@ -162,12 +176,7 @@ private:
     char blockBitmap[BLOCK_NUMBER / 8];  // block的使用位图
     DirectoryBlock blockMem[BLOCK_NUMBER];  // 存储所有block,既可以当作DirectoryBlock，也可以当作FileBlock
     std::string backupFileName[MAX_BACKUPFILE_SIZE];  // 备份文件名
-    //FileBlock blockMem[BLOCK_NUMBER];  // 存储所有数据块(实际上不需要)
-
-    //并发控制
-    std::mutex mutex_;  // 用于文件系统操作的互斥锁
-
-   
+    //FileBlock blockMem[BLOCK_NUMBER];  // 存储所有数据块(实际上不需要)      
 
     // helper 辅助函数
     std::vector<std::string> splitPath(const char* path); //分割路径函数
@@ -176,13 +185,14 @@ private:
     int allocateBlock();//找空闲的block
     void freeInode(int inodeID);// 还原位图中对应的位
     void freeBlock(int blockID);// 还原位图中对应的位
-    
-    void lockMutex();  // 加锁，锁住整个文件系统
-    void unlockMutex();  // 解锁
+        
 
     void updateBackupFileList();
 
+    //查看用户是不是文件的用户组成员
     
+    bool isInGroup(const std::string& filePath, const std::string& user);
+
 };
 
 #endif
